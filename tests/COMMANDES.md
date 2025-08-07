@@ -42,6 +42,9 @@ curl -X PUT http://localhost:3000/api/products/1 \
 
 # Supprimer un produit
 curl -X DELETE http://localhost:3000/api/products/1
+
+## Compter les produits
+curl http://localhost:3000/api/products/count
 ```
 
 ## Test avec fichier .http

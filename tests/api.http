@@ -130,3 +130,8 @@ Content-Type: {{contentType}}
   "name": "Produit test",
   "price": -50
 }
+
+### 11. Test COUNT - Compter tous les produits
+GET {{baseUrl}}/api/products/count
+
+
