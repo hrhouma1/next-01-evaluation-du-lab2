@@ -1,4 +1,4 @@
-# Laboratoire 3 - Projet Next.js avec Services Web REST
+# Laboratoire 2 - Projet Next.js avec Services Web REST
 
 ## Contexte pédagogique
 
