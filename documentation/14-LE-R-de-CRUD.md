@@ -1,3 +1,68 @@
+# Arborescence des fonctions
+
+Pour chaque fonction, j'explique:
+
+* **Ce qu’elle fait**
+* **Ce qu’elle renvoie** (ou l’effet qu’elle produit)
+
+Cela montre la logique **sans afficher le code**, juste la structure.
+
+```
+ProductsPage()  ← Composant principal (Client Component : "use client")
+│
+├── useState() x3
+│     ├─ products       : Tableau des produits
+│     ├─ loading        : Booléen (affiche "Chargement...")
+│     └─ error          : Chaîne ou null (affiche message erreur)
+│
+├── load()  ← Fonction asynchrone de chargement
+│     ├─ Met loading = true
+│     ├─ Fait fetch("/api/products", { cache: "no-store" })
+│     ├─ Si succès → setProducts(...) et setError(null)
+│     ├─ Si erreur → setError(message)
+│     └─ Met loading = false
+│     ↳ Ne renvoie rien (void) mais modifie l’état → rafraîchit l’UI
+│
+├── useEffect( load(), [] )
+│     └─ Appelé une seule fois au montage
+│
+├── handleDelete(id)  ← Fonction asynchrone de suppression
+│     ├─ Demande confirmation à l’utilisateur
+│     ├─ Si confirmé → fetch DELETE `/api/products/{id}`
+│     ├─ Si succès → appelle load() pour recharger
+│     └─ Si erreur → affiche un alert
+│     ↳ Ne renvoie rien (void) mais modifie l’état → rafraîchit l’UI
+│
+└── return ( ... )
+      ├─ <main> ... </main> ← JSX principal
+      │
+      ├─ En-tête : titre + lien "Nouveau produit"
+      │
+      ├─ Rendu conditionnel :
+      │     ├─ loading === true → <p>Chargement...</p>
+      │     ├─ error non null  → <p>{error}</p>
+      │     ├─ liste vide      → <p>Aucun produit.</p>
+      │     └─ sinon           → <ul> avec <li> produits
+      │
+      └─ Chaque <li> contient :
+            ├─ Nom du produit (lien vers détail)
+            ├─ Prix formaté
+            ├─ Lien "Modifier"
+            └─ Bouton "Supprimer" → handleDelete()
+```
+
+### Lecture vulgarisée pour les étudiants
+
+* **ProductsPage()** : la “boîte” principale. C’est elle qui renvoie tout le code HTML (JSX) final.
+* **load()** : va chercher les produits depuis l’API et met à jour l’état → rafraîchit l’affichage.
+* **useEffect** : lance `load()` automatiquement dès que la page s’ouvre.
+* **handleDelete(id)** : supprime un produit et recharge la liste.
+* **return (...)** : c’est le HTML final que React affiche, construit en fonction de `products`, `loading`, et `error`.
+
+
+<br/>
+
+
 # Version complète (corrigée) avec commentaires
 
 ```tsx
