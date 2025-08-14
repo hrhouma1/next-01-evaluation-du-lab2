@@ -274,7 +274,7 @@ const fmt = new Intl.NumberFormat("fr-CA", { style: "currency", currency: "CAD" 
 
 ---
 
-# Résumé pour vos étudiants
+# Résumé 
 
 * **`"use client"`** : obligatoire pour les hooks / handlers.
 * **Hooks** : `useState` pour l’état local, `useEffect` pour charger après le premier rendu.
@@ -283,3 +283,96 @@ const fmt = new Intl.NumberFormat("fr-CA", { style: "currency", currency: "CAD" 
 * **Liste** : `.map`, `key` unique, liens `Link` pour la navigation, handlers pour actions.
 * **UX** : recharger après suppression (simple), ou *optimistic* (avancé).
 * **TypeScript** : typer les données (`type Product`) → fiabilité et autocomplétion.
+
+
+
+
+# Annexe 1
+
+## 1) Cycle de vie (chargement initial des produits)
+
+```mermaid
+flowchart TD
+    A["Fichier .tsx<br/>→ « use client »"] --> B["Render initial du composant<br/>ProductsPage()"]
+    B --> C["useEffect(() => load(), [])<br/>→ appelé 1 seule fois"]
+    C --> D["load()"]
+    D --> E["setLoading(true)"]
+    E --> F["fetch('/api/products', { cache:'no-store' })"]
+    F -->|Succès| G["res.json() → { success:true, data }"]
+    G --> H["setProducts(data)"]
+    H --> I["setError(null)"]
+    F -->|Échec| J["res.json() ou throw Error(...)"]
+    J --> K["setError(message)"]
+    I --> L["setLoading(false)"]
+    K --> L
+    L --> M["Rendu UI"]
+    M --> N{"loading ?"}
+    N -->|true| O["Afficher: « Chargement… »"]
+    N -->|false| P{"products.length === 0 ?"}
+    P -->|true| Q["Afficher: « Aucun produit. »"]
+    P -->|false| R["Afficher la liste <ul>"]
+```
+
+**Idée clé** :
+
+* `useEffect` déclenche `load()` après le premier rendu.
+* `load()` met `loading=true`, récupère les données, met à jour `products`/`error`, puis `loading=false`.
+* Le **rendu conditionnel** affiche soit “Chargement…”, soit “Aucun produit.”, soit la liste.
+
+---
+
+## 2) Séquence d’affichage d’un item + navigation
+
+```mermaid
+sequenceDiagram
+    participant User as Utilisateur
+    participant UI as ProductsPage (UI)
+    participant API as /api/products
+
+    User->>UI: Arrive sur /products
+    UI->>UI: useEffect → load()
+    UI->>API: GET /api/products
+    API-->>UI: { success:true, data:[{id,name,price,...}] }
+    UI->>UI: setProducts(data), setLoading(false)
+    UI->>User: Affiche liste <ul> avec <Link href="/products/{id}">
+
+    User->>UI: Clique sur “Nouveau produit”
+    UI->>UI: <Link href="/products/new"> (navigation client)
+```
+
+**Idée clé** :
+
+* La **navigation** interne utilise `Link` (sans recharger toute la page).
+* Chaque produit est un `<li>` avec un lien vers son détail (`/products/{id}`) et un lien “Modifier”.
+
+---
+
+## 3) Suppression d’un produit (handleDelete)
+
+```mermaid
+flowchart LR
+    A["Bouton « Supprimer »<br/>onClick={() => handleDelete(id)}"] --> B["handleDelete(id)"]
+    B --> C{"confirm('Supprimer ce produit ?')"}
+    C -->|Annuler| D["return (ne rien faire)"]
+    C -->|Confirmer| E["fetch(`/api/products/${id}`, { method:'DELETE' })"]
+    E -->|res.ok| F["await load()<br/>→ recharge la liste depuis l'API"]
+    E -->|!res.ok| G["Lire j = await res.json()<br/>alert(j.error || 'Suppression impossible')"]
+    F --> H["UI mise à jour (produit disparu)"]
+```
+
+**Idée clé** :
+
+* On **confirme** avant de supprimer.
+* Si l’API répond OK, on **recharge** la liste (solution simple et robuste).
+* Sinon, on **affiche un message d’erreur**.
+
+---
+
+### Légende rapide
+
+* **« use client »** : oblige Next.js à traiter ce fichier comme **Client Component** (hooks, onClick, confirm, etc.).
+* **`useEffect(..., [])`** : exécute `load()` **une fois** après le rendu initial.
+* **`load()`** : gère trio **loading / data / error** et appelle l’API.
+* **Rendu conditionnel** : montre `Chargement…`, `Aucun produit.`, ou la liste `<ul>`.
+* **`handleDelete(id)`** : confirme, DELETE, puis **rafraîchit** la liste.
+
