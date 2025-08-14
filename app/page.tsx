@@ -28,6 +28,9 @@ export default function Home() {
         <p className="mt-6">
           Utilisez Postman ou un autre client REST pour tester ces endpoints.
         </p>
+        <p className="mt-2">
+          Interface web: <a className="underline" href="/products">/products</a>
+        </p>
       </div>
     </main>
   )

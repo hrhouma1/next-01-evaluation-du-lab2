@@ -126,3 +126,83 @@ npm install
 
 **Durée estimée :** 3-4 heures pour un étudiant débutant
 **Prérequis :** Bases de JavaScript/TypeScript et HTTP
+
+## Endpoints disponibles
+
+| Méthode | Endpoint                     | Description                                  |
+|---------|------------------------------|----------------------------------------------|
+| GET     | `/api/products`              | Lister tous les produits                      |
+| POST    | `/api/products`              | Créer un produit (name, price)               |
+| GET     | `/api/products/[id]`         | Obtenir un produit par son identifiant       |
+| PUT     | `/api/products/[id]`         | Modifier un produit par son identifiant      |
+| DELETE  | `/api/products/[id]`         | Supprimer un produit par son identifiant     |
+| GET     | `/api/products/count`        | Compter le nombre total de produits          |
+
+## Endpoints proposés (exercices)
+
+Ces endpoints seront ajoutés par les étudiants au fur et à mesure des exercices (voir 08-EXERCICES_SIMPLES.md) :
+
+| Méthode | Endpoint                             | Description                                        |
+|---------|--------------------------------------|----------------------------------------------------|
+| GET     | `/api/products/most-expensive`       | Récupérer le produit le plus cher                  |
+| GET     | `/api/products/cheapest`             | Récupérer le produit le moins cher                 |
+| DELETE  | `/api/products/all`                   | Supprimer tous les produits                        |
+| GET     | `/api/products/search/[name]`         | Rechercher un produit par nom exact                |
+| PATCH   | `/api/products/[id]/price`            | Modifier uniquement le prix d’un produit           |
+| GET     | `/api/products/oldest-first`          | Lister les produits du plus ancien au plus récent  |
+| HEAD    | `/api/products/[id]`                  | Vérifier l’existence d’un produit (sans contenu)   |
+
+## Exemples d'appels API
+
+### Exemples GET
+
+```bash
+# Lister tous les produits
+curl -X GET http://localhost:3000/api/products
+
+# Obtenir un produit par ID (ex: 1)
+curl -X GET http://localhost:3000/api/products/1
+
+# Compter le nombre total de produits
+curl -X GET http://localhost:3000/api/products/count
+
+# (Exercice) Produit le plus cher
+curl -X GET http://localhost:3000/api/products/most-expensive
+
+# (Exercice) Produit le moins cher
+curl -X GET http://localhost:3000/api/products/cheapest
+
+# (Exercice) Lister du plus ancien au plus récent
+curl -X GET http://localhost:3000/api/products/oldest-first
+
+# (Exercice) Recherche par nom exact (URL encodée)
+curl -X GET http://localhost:3000/api/products/search/iPhone%2015
+```
+
+### Exemples POST
+
+```bash
+# Créer un produit
+curl -X POST http://localhost:3000/api/products \
+  -H "Content-Type: application/json" \
+  -d '{"name": "MacBook Air M2", "price": 1299.99}'
+```
+
+### Exemples PUT
+
+```bash
+# Modifier un produit (ex: ID 1)
+curl -X PUT http://localhost:3000/api/products/1 \
+  -H "Content-Type: application/json" \
+  -d '{"name": "MacBook Air M2 - Edition", "price": 1399.99}'
+```
+
+### Exemples DELETE
+
+```bash
+# Supprimer un produit par ID (ex: 1)
+curl -X DELETE http://localhost:3000/api/products/1
+
+# (Exercice) Supprimer tous les produits
+curl -X DELETE http://localhost:3000/api/products/all
+```
