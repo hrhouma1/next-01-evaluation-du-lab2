@@ -25,6 +25,43 @@ Dans `app/page.tsx`, ajouter un lien visible vers l’interface:
 
 ## Étape 1 – Page de liste `/products`
 
+### Vue globale (très simplifiée)
+
+- Rôle de la page: afficher la liste des produits et proposer des actions (créer, voir le détail, modifier, supprimer).
+- Pourquoi `"use client"`: cette page est interactive (états React, événements click). On l’exécute donc côté navigateur.
+- États utilisés:
+  - `products`: tableau des produits à afficher
+  - `loading`: indicateur de chargement
+  - `error`: message d’erreur lisible si l’appel échoue
+- Fonctions clés:
+  - `load()`
+    - Quand: appelée au montage du composant via `useEffect(() => { load() }, [])`
+    - Que fait-elle: `fetch("/api/products")` (GET), lit la réponse JSON et remplit `products`
+    - En cas d’échec: remplit `error`
+  - `handleDelete(id)`
+    - Quand: au click sur le bouton “Supprimer” d’un produit
+    - Que fait-elle: `fetch("/api/products/{id}", { method: "DELETE" })`, puis relance `load()` pour rafraîchir la liste
+- Rendu conditionnel:
+  - si `loading` → “Chargement...”
+  - sinon si `error` → affiche l’erreur
+  - sinon si `products.length === 0` → “Aucun produit.”
+  - sinon → affiche la liste
+- Navigation:
+  - Lien “Nouveau produit” → `/products/new`
+  - Lien sur le nom du produit → détail `/products/[id]`
+  - Lien “Modifier” → `/products/[id]/edit`
+- Styles: classes Tailwind simples (`container mx-auto p-8`, `border p-3 rounded`, etc.).
+
+Schéma du flux:
+
+```
+Montage de la page → useEffect() → load() → GET /api/products → setProducts() → affichage liste
+                                                  │
+                                                  └─(erreur)→ setError() → message d’erreur
+
+Click “Supprimer” → handleDelete(id) → DELETE /api/products/{id} → load() → liste à jour
+```
+
 Créer le fichier `app/products/page.tsx` puis coller ce code. Enregistrer et tester sur `http://localhost:3000/products`.
 
 ```tsx
