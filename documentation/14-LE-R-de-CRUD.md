@@ -51,7 +51,7 @@ ProductsPage()  ← Composant principal (Client Component : "use client")
             └─ Bouton "Supprimer" → handleDelete()
 ```
 
-### Lecture vulgarisée pour les étudiants
+### Lecture vulgarisée
 
 * **ProductsPage()** : la “boîte” principale. C’est elle qui renvoie tout le code HTML (JSX) final.
 * **load()** : va chercher les produits depuis l’API et met à jour l’état → rafraîchit l’affichage.
