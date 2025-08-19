@@ -25,6 +25,10 @@ Consultez le dossier `documentation/` pour tous les guides (par ordre d'utilisat
 - **[08-EXERCICES_SIMPLES.md](documentation/08-EXERCICES_SIMPLES.md)** - Exercices simples progressifs
 - **[09-EXERCICE_SERVICES_AVANCES.md](documentation/09-EXERCICE_SERVICES_AVANCES.md)** - Exercices avancés
 - **[10-MIGRATION_SCHEMA.md](documentation/10-MIGRATION_SCHEMA.md)** - Migration du schéma et adaptation
+- **[13-GUIDE_UI_CRUD.md](documentation/13-GUIDE_UI_CRUD.md)** - Guide UI CRUD complet
+- **[15-DEPLOIEMENT_VERCEL.md](documentation/15-DEPLOIEMENT_VERCEL.md)** - Guide déploiement Vercel
+- **[16-DEPLOIEMENT_VERCEL_PRATIQUE.md](documentation/16-DEPLOIEMENT_VERCEL_PRATIQUE.md)** - Session pratique déploiement
+- **[17-INTEGRATION_SWAGGER.md](documentation/17-INTEGRATION_SWAGGER.md)** - Intégration Swagger/OpenAPI
 
 ## Services disponibles
 

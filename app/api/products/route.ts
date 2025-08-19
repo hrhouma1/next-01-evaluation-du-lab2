@@ -1,7 +1,67 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-// GET /api/products - Obtenir tous les produits
+/**
+ * @swagger
+ * /api/products:
+ *   get:
+ *     summary: Récupérer la liste de tous les produits
+ *     description: |
+ *       Retourne la liste complète de tous les produits enregistrés en base de données,
+ *       triés par date de création décroissante (plus récent en premier).
+ *     tags:
+ *       - Produits
+ *     responses:
+ *       200:
+ *         description: Liste des produits récupérée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Product'
+ *                 message:
+ *                   type: string
+ *                   example: "3 produit(s) trouvé(s)"
+ *             examples:
+ *               liste_vide:
+ *                 summary: Liste vide
+ *                 value:
+ *                   success: true
+ *                   data: []
+ *                   message: "0 produit(s) trouvé(s)"
+ *               liste_avec_produits:
+ *                 summary: Liste avec produits
+ *                 value:
+ *                   success: true
+ *                   data:
+ *                     - id: 1
+ *                       name: "iPhone 15 Pro"
+ *                       price: 1199.99
+ *                       createdAt: "2024-01-15T10:30:00.000Z"
+ *                       updatedAt: "2024-01-15T10:30:00.000Z"
+ *                     - id: 2
+ *                       name: "MacBook Air M2"
+ *                       price: 1299.99
+ *                       createdAt: "2024-01-15T10:25:00.000Z"
+ *                       updatedAt: "2024-01-15T10:25:00.000Z"
+ *                   message: "2 produit(s) trouvé(s)"
+ *       500:
+ *         description: Erreur serveur lors de la récupération
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               success: false
+ *               error: "Erreur lors de la récupération des produits"
+ */
 export async function GET() {
   try {
     const products = await prisma.product.findMany({
