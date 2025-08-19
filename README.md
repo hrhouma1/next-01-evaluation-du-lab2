@@ -45,3 +45,5 @@ Consultez le dossier `documentation/` pour tous les guides (par ordre d'utilisat
 3. Node.js 18+
 
 Voir `documentation/02-GUIDE_ETUDIANT.md` pour les instructions détaillées.
+
+Amusez-vous les amis !
