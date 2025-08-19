@@ -87,7 +87,85 @@ export async function GET() {
   }
 }
 
-// POST /api/products - Ajouter un nouveau produit
+/**
+ * @swagger
+ * /api/products:
+ *   post:
+ *     summary: Créer un nouveau produit
+ *     description: |
+ *       Crée un nouveau produit en base de données après validation des données.
+ *       Le nom doit être une chaîne non vide et le prix un nombre positif.
+ *     tags:
+ *       - Produits
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ProductInput'
+ *           examples:
+ *             produit_simple:
+ *               summary: Produit standard
+ *               value:
+ *                 name: "iPhone 15 Pro"
+ *                 price: 1199.99
+ *             produit_economique:
+ *               summary: Produit économique
+ *               value:
+ *                 name: "Écouteurs basiques"
+ *                 price: 19.99
+ *     responses:
+ *       201:
+ *         description: Produit créé avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Product'
+ *                 message:
+ *                   type: string
+ *                   example: "Produit créé avec succès"
+ *             example:
+ *               success: true
+ *               data:
+ *                 id: 1
+ *                 name: "iPhone 15 Pro"
+ *                 price: 1199.99
+ *                 createdAt: "2024-01-15T10:30:00.000Z"
+ *                 updatedAt: "2024-01-15T10:30:00.000Z"
+ *               message: "Produit créé avec succès"
+ *       400:
+ *         description: Données invalides
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               nom_manquant:
+ *                 summary: Nom manquant
+ *                 value:
+ *                   success: false
+ *                   error: "Le nom du produit est requis et doit être une chaîne non vide"
+ *               prix_invalide:
+ *                 summary: Prix invalide
+ *                 value:
+ *                   success: false
+ *                   error: "Le prix doit être un nombre positif"
+ *       500:
+ *         description: Erreur serveur lors de la création
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               success: false
+ *               error: "Erreur lors de la création du produit"
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()

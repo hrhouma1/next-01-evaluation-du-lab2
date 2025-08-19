@@ -29,6 +29,7 @@ Consultez le dossier `documentation/` pour tous les guides (par ordre d'utilisat
 - **[15-DEPLOIEMENT_VERCEL.md](documentation/15-DEPLOIEMENT_VERCEL.md)** - Guide déploiement Vercel
 - **[16-DEPLOIEMENT_VERCEL_PRATIQUE.md](documentation/16-DEPLOIEMENT_VERCEL_PRATIQUE.md)** - Session pratique déploiement
 - **[17-INTEGRATION_SWAGGER.md](documentation/17-INTEGRATION_SWAGGER.md)** - Intégration Swagger/OpenAPI
+- **[18-DOCUMENTATION_SWAGGER_COMPLETE.md](documentation/18-DOCUMENTATION_SWAGGER_COMPLETE.md)** - Documentation Swagger CRUD complète
 
 ## Services disponibles
 
