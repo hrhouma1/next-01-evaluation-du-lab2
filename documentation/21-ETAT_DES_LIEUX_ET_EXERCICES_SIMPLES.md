@@ -101,6 +101,35 @@ export async function GET(request: NextRequest) {
 }
 ```
 
+### Remarque importante !!!!
+
+L'équivalent du code (1) en SQL est le suivant (2)
+
+#### Code 1
+
+```sql
+const products = await prisma.product.findMany({
+      where: {
+        name: {
+          contains: query,
+          mode: 'insensitive'
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+```
+
+#### Code 2
+
+```sql
+SELECT * FROM "product"
+WHERE LOWER("name") 
+LIKE LOWER ('%<query>%')
+ORDER BY "createdAt" DESC;
+```
+
 #### Étape 2 : Documenter avec Swagger (15 min)
 Ajouter AVANT la fonction GET :
 
