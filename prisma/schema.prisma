@@ -10,12 +10,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Product {
-  id    Int     @id @default(autoincrement())
-  name  String
-  price Float
+model Task {
+  id        Int      @id @default(autoincrement())
+  title     String   @unique
+  description String?
+  status  String?
+  priority      String?
+  dueDate DateTime?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  @@map("products")
+  @@map("tasks")
 }
