@@ -649,123 +649,594 @@ Redémarrez votre serveur Next.js après `npx prisma generate` :
 npm run dev
 ```
 
-## Erreurs d'authentification
+## Erreurs d'authentification - Problèmes de configuration NextAuth
 
-### ❌ Erreur : "NextAuth URL (NEXTAUTH_URL) not provided"
+### Qu'est-ce qu'une erreur d'authentification ?
+**Explication pour débutants :** Ces erreurs surviennent quand NextAuth ne peut pas fonctionner correctement à cause de configurations manquantes ou incorrectes : URL mal définie, clé secrète absente, providers mal configurés, etc.
 
-**Symptôme :**
+**Analogie :** C'est comme essayer de démarrer une voiture sans clés, ou avec une adresse GPS incomplète - le système ne peut pas fonctionner sans les informations essentielles.
+
+### ERREUR 7 : "NextAuth URL (NEXTAUTH_URL) not provided"
+
+**Symptôme complet que vous voyez :**
 ```
 [next-auth][error][NEXTAUTH_URL] 
+https://next-auth.js.org/errors#nextauth_url
 NEXTAUTH_URL environment variable is not set
+
+Error: Please define the NEXTAUTH_URL environment variable
+  at checkEnvVariable (/node_modules/next-auth/src/utils/env.js:42:11)
 ```
 
-**Cause :** La variable d'environnement `NEXTAUTH_URL` n'est pas définie.
+**Traduction simple :** "NextAuth ne sait pas quelle est l'URL de votre application"
 
-**Solution :**
-Ajoutez dans votre fichier `.env` :
+**Ce qui s'est passé techniquement :**
+1. NextAuth a besoin de connaître l'URL de base de votre application
+2. Il cherche la variable d'environnement `NEXTAUTH_URL`
+3. Il ne la trouve pas dans votre fichier `.env`
+4. Il refuse de démarrer sans cette information critique
+
+**Pourquoi NextAuth a besoin de cette URL ?**
+- **Redirections après connexion :** ramener l'utilisateur à la bonne page
+- **Callbacks OAuth :** Google/GitHub ont besoin de savoir où renvoyer l'utilisateur
+- **Cookies de session :** sécuriser les cookies avec le bon domaine
+- **URLs internes :** génerer les liens vers `/api/auth/signin`, etc.
+
+**Analogie :** C'est comme donner votre adresse postale à un livreur - il ne peut pas vous livrer s'il ne sait pas où vous habitez.
+
+**Solution détaillée :**
+
+**Étape 1 : Vérifier si le fichier .env existe**
+```bash
+ls .env
+```
+
+**Sur Windows PowerShell :**
+```powershell
+Get-Item .env
+```
+
+**Si le fichier n'existe pas :**
+```bash
+# Créer le fichier .env à la racine du projet
+touch .env
+```
+
+**Sur Windows :**
+```powershell
+New-Item .env
+```
+
+**Étape 2 : Ajouter la variable NEXTAUTH_URL**
+
+Ouvrez votre fichier `.env` et ajoutez cette ligne :
+
 ```env
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
-Si votre serveur tourne sur un autre port :
-```env
-NEXTAUTH_URL="http://localhost:3001"
+**Explication de cette valeur :**
+- `http://localhost:3000` = URL complète de votre serveur de développement
+- **Pas de slash à la fin** → `http://localhost:3000/` est incorrect
+- **Protocole obligatoire** → `localhost:3000` sans `http://` est incorrect
+
+**Si votre serveur tourne sur un port différent :**
+Regardez dans votre terminal où tourne `npm run dev` :
+- Port 3001 : `NEXTAUTH_URL="http://localhost:3001"`
+- Port 3002 : `NEXTAUTH_URL="http://localhost:3002"`
+- Etc.
+
+**Étape 3 : Redémarrer le serveur**
+```bash
+# Arrêter le serveur (Ctrl+C)
+# Puis relancer :
+npm run dev
 ```
 
-### ❌ Erreur : "No secret provided"
+**Pourquoi redémarrer ?** Next.js ne recharge pas automatiquement les variables d'environnement. Il faut redémarrer pour qu'il lise le nouveau `.env`.
 
-**Symptôme :**
+**Vérification que ça marche :**
+Le serveur devrait démarrer sans l'erreur `NEXTAUTH_URL`. Si l'erreur persiste :
+- Vérifiez qu'il n'y a pas d'espaces autour du `=`
+- Vérifiez que le fichier `.env` est bien à la racine (même niveau que `package.json`)
+- Vérifiez qu'il n'y a pas de fautes de frappe dans le nom de la variable
+
+### ERREUR 8 : "No secret provided"
+
+**Symptôme complet que vous voyez :**
 ```
 [next-auth][error][NO_SECRET] 
-No secret provided
+https://next-auth.js.org/errors#no_secret
+Please define a `secret` in production. MissingSecret
+
+Warning: No secret was provided. This is required in production to securely sign cookies.
+NextAuth will generate a secret for you, but this may cause problems in production.
 ```
 
-**Cause :** La variable `NEXTAUTH_SECRET` est manquante ou trop courte.
+**Traduction simple :** "NextAuth n'a pas de clé secrète pour sécuriser les sessions"
 
-**Solution :**
-Ajoutez dans votre `.env` une clé secrète longue :
+**Ce qui s'est passé techniquement :**
+1. NextAuth utilise une clé secrète pour crypter et signer les tokens JWT
+2. Il cherche cette clé dans la variable `NEXTAUTH_SECRET`
+3. Il ne la trouve pas → il génère une clé temporaire aléatoire
+4. **Problème :** cette clé temporaire change à chaque redémarrage du serveur
+
+**Pourquoi c'est un problème ?**
+- **Sessions perdues :** quand vous redémarrez le serveur, tous les utilisateurs connectés sont déconnectés
+- **Sécurité :** une clé générée automatiquement peut être moins sûre
+- **Production :** NextAuth refuse de fonctionner sans clé secrète fixe
+
+**Analogie :** C'est comme changer la serrure de votre maison à chaque fois que vous sortez - vos clés existantes ne fonctionnent plus.
+
+**Solution détaillée :**
+
+**Étape 1 : Générer une clé secrète sécurisée**
+
+**Méthode A : Utiliser un générateur en ligne**
+- Allez sur https://generate-secret.vercel.app/32
+- Copiez la clé générée (32+ caractères)
+
+**Méthode B : Utiliser Node.js**
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+**Méthode C : Créer manuellement**
+Tapez 32+ caractères aléatoirement : lettres, chiffres, symboles. Par exemple :
+```
+ma-cle-super-secrete-pour-nextauth-2024-unique-projet
+```
+
+**Étape 2 : Ajouter la variable dans .env**
+
+Ouvrez votre fichier `.env` et ajoutez cette ligne :
+
 ```env
-NEXTAUTH_SECRET="votre-cle-secrete-tres-longue-minimum-32-caracteres-unique"
+NEXTAUTH_SECRET="la-cle-que-vous-avez-generee-etape-precedente"
 ```
 
-### ❌ Erreur : "Credentials signin failed"
+**Exemple concret :**
+```env
+NEXTAUTH_SECRET="abc123def456ghi789jkl012mno345pqr678stu901vwx234"
+```
 
-**Symptôme :**
+**Règles importantes pour la clé secrète :**
+- **Minimum 32 caractères** (NextAuth le recommande)
+- **Unique à votre projet** (ne copiez pas l'exemple ci-dessus)
+- **Gardez-la secrète** (ne la partagez jamais, ne la commitez pas sur GitHub)
+- **Mélangez lettres, chiffres et symboles** pour plus de sécurité
+
+**Étape 3 : Redémarrer le serveur**
+```bash
+# Arrêter le serveur (Ctrl+C)
+# Puis relancer :
+npm run dev
+```
+
+**Étape 4 : Vérification que ça marche**
+Le warning `No secret provided` devrait avoir disparu dans votre terminal.
+
+**Votre fichier .env devrait maintenant ressembler à ça :**
+```env
+DATABASE_URL="postgresql://..."
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="votre-cle-secrete-longue-et-unique"
+```
+
+**Note de sécurité :** En production (sur un serveur réel), utilisez une clé encore plus complexe et stockez-la de façon sécurisée (variables d'environnement du serveur, pas dans un fichier).
+
+### ERREUR 9 : "Credentials signin failed"
+
+**Symptôme complet que vous voyez :**
 ```
 [next-auth][error][CREDENTIALS_SIGNIN_FAILED]
+https://next-auth.js.org/errors#credentials_signin_failed
+
+CredentialsSignin: Invalid credentials provided
+  at authorize (lib/auth.ts:45:13)
+  at process.processTicksAndRejections
 ```
 
-**Cause :** Erreur dans la logique d'authentification credentials.
-
-**Solutions possibles :**
-
-1. **Vérifier le hachage du mot de passe :**
-```typescript
-// Dans lib/auth.ts, vérifiez cette ligne :
-const isPasswordValid = await bcrypt.compare(
-  credentials.password,
-  user.password
-)
+**Ou parfois :**
+```
+Error: Signin failed. Check the details you provided are correct.
 ```
 
-2. **Vérifier la gestion d'erreurs :**
+**Traduction simple :** "La connexion avec email/mot de passe a échoué"
+
+**Ce qui s'est passé techniquement :**
+1. L'utilisateur remplit le formulaire de connexion avec email + mot de passe
+2. NextAuth appelle votre fonction `authorize` dans `lib/auth.ts`
+3. Cette fonction renvoie `null` au lieu d'un objet utilisateur
+4. NextAuth interprète cela comme "identifiants incorrects"
+
+**Causes courantes pour débutants :**
+- **Mot de passe incorrect :** l'utilisateur tape le mauvais mot de passe
+- **Email inexistant :** l'utilisateur tape un email qui n'existe pas en base
+- **Erreur de comparaison bcrypt :** votre code ne compare pas correctement les mots de passe
+- **Fonction authorize qui throw des erreurs** au lieu de retourner `null`
+- **Base de données inaccessible :** Prisma ne peut pas se connecter
+
+**Solution détaillée :**
+
+**Étape 1 : Vérifier que l'utilisateur existe**
+Allez dans Prisma Studio pour vérifier :
+```bash
+npx prisma studio
+```
+- Ouvrez la table `User`
+- Cherchez l'email que vous essayez d'utiliser
+- Vérifiez qu'il y a bien un mot de passe crypté dans la colonne `password`
+
+**Si l'utilisateur n'existe pas :** Créez d'abord un compte via `/auth/signup`.
+
+**Étape 2 : Débugger votre fonction authorize**
+
+Ouvrez `lib/auth.ts` et ajoutez des `console.log` pour débugger :
+
 ```typescript
-// Remplacez les throw new Error par return null
 async authorize(credentials) {
+  console.log("🚀 Tentative de connexion avec:", credentials?.email);
+  
   if (!credentials?.email || !credentials?.password) {
-    return null // ← return null au lieu de throw
+    console.log("❌ Identifiants manquants");
+    return null;
   }
-  // ...
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: credentials.email }
+    });
+
+    console.log("👤 Utilisateur trouvé:", user ? "OUI" : "NON");
+    
+    if (!user || !user.password) {
+      console.log("❌ Utilisateur inexistant ou sans mot de passe");
+      return null;
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      credentials.password,
+      user.password
+    );
+
+    console.log("🔑 Mot de passe valide:", isPasswordValid ? "OUI" : "NON");
+
+    if (!isPasswordValid) {
+      console.log("❌ Mot de passe incorrect");
+      return null;
+    }
+
+    console.log("✅ Connexion réussie pour:", user.email);
+    
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    };
+    
+  } catch (error) {
+    console.error("💥 Erreur dans authorize:", error);
+    return null; // ← IMPORTANT: return null, pas throw error
+  }
 }
 ```
 
-### ❌ Erreur : "OAuth signin failed"
+**Étape 3 : Tester avec les logs**
+```bash
+npm run dev
+```
 
-**Symptôme :**
+Essayez de vous connecter et regardez les messages dans le terminal. Cela vous dira exactement où ça coince.
+
+**Erreurs courantes révélées par les logs :**
+
+**Si "Utilisateur trouvé: NON" :**
+- L'email tapé ne correspond pas exactement à celui en base
+- Vérifiez les majuscules/minuscules
+- Vérifiez les espaces avant/après l'email
+
+**Si "Mot de passe valide: NON" :**
+- Le mot de passe tapé ne correspond pas au hash en base
+- Vérifiez que le mot de passe a bien été crypté avec bcrypt lors de l'inscription
+- Vérifiez que vous utilisez le bon mot de passe
+
+**Étape 4 : Nettoyer les logs (après débogage)**
+Une fois le problème résolu, retirez tous les `console.log` de votre code de production.
+
+### ERREUR 10 : "OAuth signin failed"
+
+**Symptôme complet que vous voyez :**
 ```
 [next-auth][error][OAUTH_SIGNIN_FAILED]
+https://next-auth.js.org/errors#oauth_signin_failed
+
+OAuthSignInError: Failed to retrieve user profile from Google
+  at oAuthCallback (node_modules/next-auth/src/core/lib/oauth/callback.ts:89:13)
 ```
 
-**Cause :** Configuration OAuth incorrecte.
+**Ou :**
+```
+[next-auth][error][OAUTH_GET_ACCESS_TOKEN_ERROR]
+https://next-auth.js.org/errors#oauth_get_access_token_error
+invalid_client
+```
 
-**Solutions :**
+**Traduction simple :** "La connexion avec Google/GitHub/autre provider OAuth a échoué"
 
-1. **Vérifiez les variables d'environnement :**
+**Ce qui s'est passé techniquement :**
+1. L'utilisateur clique sur "Se connecter avec Google"
+2. Il est redirigé vers Google pour s'authentifier
+3. Google essaie de renvoyer l'utilisateur vers votre application
+4. L'échange de tokens ou la récupération du profil échoue
+
+**Causes courantes pour débutants :**
+- **Variables d'environnement manquantes :** `GOOGLE_CLIENT_ID` ou `GOOGLE_CLIENT_SECRET` absents
+- **URLs de callback incorrectes :** dans la console Google/GitHub
+- **Client ID/Secret incorrects :** copiés avec des erreurs
+- **Application OAuth non activée :** dans les consoles Google/GitHub
+
+**Solution détaillée :**
+
+**Étape 1 : Vérifier les variables d'environnement**
+
+Ouvrez votre fichier `.env` et vérifiez que vous avez :
+
 ```env
-GOOGLE_CLIENT_ID="votre-client-id-google"
-GOOGLE_CLIENT_SECRET="votre-client-secret-google"
+# Pour Google OAuth (optionnel)
+GOOGLE_CLIENT_ID="1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="ABCDEF-GhIjKlMnOpQrStUvWxYz"
+
+# Pour GitHub OAuth (optionnel)
+GITHUB_ID="1234567890abcdef"
+GITHUB_SECRET="abcdef1234567890ghijklmnopqrstuvwxyz123456"
 ```
 
-2. **Vérifiez les URLs de callback dans votre provider :**
-- Google Console : `http://localhost:3000/api/auth/callback/google`
-- GitHub Settings : `http://localhost:3000/api/auth/callback/github`
+**Variables manquantes ?** C'est normal si vous voulez utiliser seulement email/mot de passe. Dans ce cas, supprimez les providers OAuth de `lib/auth.ts` :
 
-## Erreurs de routage
-
-### ❌ Erreur : "404 - This page could not be found"
-
-**Symptôme :**
-Page 404 sur `/auth/signin` ou `/auth/signup`
-
-**Cause :** Les pages d'authentification n'existent pas.
-
-**Solution :**
-Vérifiez que ces fichiers existent :
-- `app/auth/signin/page.tsx`
-- `app/auth/signup/page.tsx`
-
-### ❌ Erreur : "500 - Internal Server Error" sur les APIs
-
-**Symptôme :**
-Erreur 500 sur `/api/auth/[...nextauth]`
-
-**Cause :** Erreur dans la configuration NextAuth.
-
-**Solutions :**
-
-1. **Vérifiez le fichier de route :**
 ```typescript
-// app/api/auth/[...nextauth]/route.ts doit contenir :
+// Commentez ou supprimez ces lignes :
+// GoogleProvider({
+//   clientId: process.env.GOOGLE_CLIENT_ID!,
+//   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+// }),
+// GitHubProvider({
+//   clientId: process.env.GITHUB_ID!,
+//   clientSecret: process.env.GITHUB_SECRET!,
+// }),
+```
+
+**Étape 2 : Vérifier la configuration Google OAuth (si vous l'utilisez)**
+
+**2A. Vérifier les URLs de callback dans la Google Console**
+- Allez sur https://console.cloud.google.com/
+- Sélectionnez votre projet
+- APIs & Services > Identifiants
+- Cliquez sur votre Client ID OAuth 2.0
+- Dans "Authorized redirect URIs", vous DEVEZ avoir exactement :
+  ```
+  http://localhost:3000/api/auth/callback/google
+  ```
+  (ou 3001 si votre serveur tourne sur ce port)
+
+**2B. Vérifier que l'API Google+ est activée**
+- Dans la même console : APIs & Services > Bibliothèque
+- Cherchez "Google+ API" ou "People API"
+- Cliquez dessus et activez l'API
+
+**Étape 3 : Vérifier la configuration GitHub OAuth (si vous l'utilisez)**
+
+**3A. Vérifier l'application OAuth dans GitHub**
+- Allez sur https://github.com/settings/developers
+- Cliquez sur votre OAuth App
+- "Authorization callback URL" doit être exactement :
+  ```
+  http://localhost:3000/api/auth/callback/github
+  ```
+
+**3B. Vérifier que l'app est bien publique**
+- Dans les paramètres de votre OAuth App
+- "Application type" doit être "Public" (pas "Private")
+
+**Étape 4 : Tester spécifiquement OAuth**
+
+**Test Google :**
+Allez sur `http://localhost:3000/api/auth/signin` et cliquez sur "Se connecter avec Google". 
+
+**Erreurs fréquentes et solutions :**
+- **"redirect_uri_mismatch" :** URL de callback incorrecte dans la Google Console
+- **"invalid_client" :** Client ID ou Secret incorrect
+- **"access_denied" :** L'utilisateur a refusé l'accès (normal)
+
+**Test GitHub :**
+Même processus avec le bouton GitHub.
+
+**Étape 5 : Mode sans OAuth (le plus simple pour débuter)**
+Si OAuth vous pose trop de problèmes, vous pouvez désactiver complètement Google et GitHub et utiliser seulement email/mot de passe :
+
+```typescript
+// Dans lib/auth.ts, gardez seulement :
+providers: [
+  CredentialsProvider({
+    name: "credentials",
+    // ... votre configuration credentials
+  }),
+  // Commentez tous les autres providers
+],
+```
+
+Cela simplifie beaucoup la configuration pour commencer.
+
+## Erreurs de routage - Problèmes de navigation et URLs
+
+### Qu'est-ce qu'une erreur de routage ?
+**Explication pour débutants :** Ces erreurs surviennent quand vous essayez d'accéder à une page web mais que Next.js ne trouve pas le fichier correspondant, ou quand les APIs ne répondent pas correctement.
+
+**Analogie :** C'est comme chercher une adresse dans une ville - si la rue n'existe pas ou si le numéro de maison est incorrect, vous ne trouvez pas votre destination.
+
+### ERREUR 11 : "404 - This page could not be found"
+
+**Symptôme complet que vous voyez dans le navigateur :**
+```
+404
+This page could not be found.
+
+Error: Cannot GET /auth/signin
+```
+
+**Ou :**
+```
+404 | This page could not be found.
+```
+Avec l'URL `http://localhost:3000/auth/signup` qui ne marche pas.
+
+**Traduction simple :** "Cette page n'existe pas"
+
+**Ce qui s'est passé techniquement :**
+1. Vous tapez `/auth/signin` dans votre navigateur
+2. Next.js cherche le fichier `app/auth/signin/page.tsx`
+3. Il ne le trouve pas → erreur 404
+4. Same pour `/auth/signup` et `app/auth/signup/page.tsx`
+
+**Pourquoi ça arrive ?**
+- Vous avez créé les dossiers mais oublié de créer les fichiers `page.tsx`
+- Les fichiers sont dans le mauvais endroit
+- Les fichiers ont le mauvais nom (ex: `signin.tsx` au lieu de `page.tsx`)
+- Vous utilisez Pages Router au lieu d'App Router (structure différente)
+
+**Solution détaillée :**
+
+**Étape 1 : Vérifier la structure de dossiers**
+```bash
+ls -la app/auth/signin/
+ls -la app/auth/signup/
+```
+
+**Sur Windows PowerShell :**
+```powershell
+Get-ChildItem app\auth\signin\
+Get-ChildItem app\auth\signup\
+```
+
+**Résultats attendus :**
+- `app/auth/signin/page.tsx` doit exister
+- `app/auth/signup/page.tsx` doit exister
+
+**Si ces fichiers n'existent pas :**
+
+**Étape 2A : Créer le fichier de connexion**
+Créez le fichier `app/auth/signin/page.tsx` avec ce contenu :
+
+```typescript
+import { SignInForm } from '@/components/auth/SignInForm'
+
+export default function SignInPage() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-md mx-auto">
+        <h1 className="text-2xl font-bold text-center mb-6">
+          Connexion
+        </h1>
+        <SignInForm />
+      </div>
+    </div>
+  )
+}
+```
+
+**Étape 2B : Créer le fichier d'inscription**
+Créez le fichier `app/auth/signup/page.tsx` avec ce contenu :
+
+```typescript
+import { SignUpForm } from '@/components/auth/SignUpForm'
+
+export default function SignUpPage() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-md mx-auto">
+        <h1 className="text-2xl font-bold text-center mb-6">
+          Créer un compte
+        </h1>
+        <SignUpForm />
+      </div>
+    </div>
+  )
+}
+```
+
+**Explication de ces fichiers :**
+- `export default function` = fonction principale de la page (obligatoire)
+- Le nom de la fonction importe peu, mais doit être descriptif
+- `return` doit contenir du JSX (HTML + JavaScript)
+- Les composants `SignInForm` et `SignUpForm` doivent exister dans `components/auth/`
+
+**Étape 3 : Vérifier que les composants existent**
+```bash
+ls -la components/auth/
+```
+
+Vous devez avoir :
+- `components/auth/SignInForm.tsx`
+- `components/auth/SignUpForm.tsx`
+
+Si ces fichiers n'existent pas, c'est un autre problème (voir le guide complet pour les créer).
+
+**Étape 4 : Tester les pages**
+```bash
+npm run dev
+```
+
+Allez sur :
+- `http://localhost:3000/auth/signin` → devrait marcher
+- `http://localhost:3000/auth/signup` → devrait marcher
+
+**Structure finale correcte :**
+```
+app/
+└── auth/
+    ├── signin/
+    │   └── page.tsx    ← Page de connexion
+    └── signup/
+        └── page.tsx    ← Page d'inscription
+```
+
+### ERREUR 12 : "500 - Internal Server Error" sur les APIs
+
+**Symptôme complet que vous voyez :**
+```
+500 - Internal Server Error
+
+Application error: a server-side exception has occurred
+```
+
+Quand vous allez sur `http://localhost:3000/api/auth/signin` ou toute autre URL commençant par `/api/auth/`.
+
+**Traduction simple :** "Erreur interne du serveur sur les APIs d'authentification"
+
+**Ce qui s'est passé techniquement :**
+1. NextAuth essaie de traiter une requête d'authentification
+2. Une erreur survient dans votre configuration (`lib/auth.ts` ou le fichier de route)
+3. Le serveur renvoie une erreur 500 au lieu de la réponse attendue
+
+**Causes courantes pour débutants :**
+- Fichier `app/api/auth/[...nextauth]/route.ts` manquant ou incorrect
+- Erreur dans la configuration `lib/auth.ts`
+- Variables d'environnement manquantes (DATABASE_URL, NEXTAUTH_SECRET, etc.)
+- Problème de connexion à la base de données
+
+**Solution détaillée :**
+
+**Étape 1 : Vérifier que le fichier de route existe**
+```bash
+ls -la app/api/auth/[...nextauth]/route.ts
+```
+
+**Si le fichier n'existe pas :**
+
+Créez le fichier `app/api/auth/[...nextauth]/route.ts` avec exactement ce contenu :
+
+```typescript
 import NextAuth from "next-auth"
 import { authOptions } from "@/lib/auth"
 
@@ -773,11 +1244,90 @@ const handler = NextAuth(authOptions)
 export { handler as GET, handler as POST }
 ```
 
-2. **Vérifiez les logs :**
-```bash
-# Dans le terminal où tourne npm run dev
-# Cherchez les erreurs détaillées
+**Explication ligne par ligne :**
+```typescript
+import NextAuth from "next-auth"
 ```
+- Importe la fonction principale de NextAuth
+- Cette fonction génère toutes les routes d'authentification automatiquement
+
+```typescript
+import { authOptions } from "@/lib/auth"
+```
+- Importe votre configuration depuis `lib/auth.ts`
+- `@/lib/auth` = alias pour `./lib/auth` (plus propre)
+
+```typescript
+const handler = NextAuth(authOptions)
+```
+- Crée le gestionnaire de routes avec votre configuration
+- `handler` gère toutes les URLs comme `/api/auth/signin`, `/api/auth/callback`, etc.
+
+```typescript
+export { handler as GET, handler as POST }
+```
+- Exporte le handler pour les requêtes GET et POST
+- Syntaxe obligatoire pour Next.js App Router
+- NextAuth a besoin des deux méthodes HTTP
+
+**Étape 2 : Vérifier les logs détaillés**
+
+Dans le terminal où tourne `npm run dev`, vous devriez voir des messages d'erreur détaillés. Exemples :
+
+**Si vous voyez :**
+```
+Error: Cannot find module '@/lib/auth'
+```
+→ Le fichier `lib/auth.ts` n'existe pas ou est mal configuré.
+
+**Si vous voyez :**
+```
+PrismaClientInitializationError: Can't reach database server
+```
+→ Problème de connexion à PostgreSQL (vérifiez DATABASE_URL).
+
+**Si vous voyez :**
+```
+[next-auth][error][NO_SECRET]
+```
+→ Variable NEXTAUTH_SECRET manquante (voir erreur précédente).
+
+**Étape 3 : Tester spécifiquement l'API NextAuth**
+
+Allez sur `http://localhost:3000/api/auth/providers` dans votre navigateur.
+
+**Résultat attendu :**
+```json
+{
+  "credentials": {
+    "id": "credentials",
+    "name": "credentials", 
+    "type": "credentials"
+  },
+  "google": {
+    "id": "google",
+    "name": "Google",
+    "type": "oauth"
+  }
+}
+```
+
+**Si vous obtenez une erreur 500 ici aussi :** Le problème est dans votre configuration `lib/auth.ts`.
+
+**Étape 4 : Diagnostic approfondi**
+
+Ajoutez temporairement cette ligne dans `lib/auth.ts` pour débugger :
+
+```typescript
+export const authOptions: NextAuthOptions = {
+  debug: true,  // ← Ajoutez cette ligne
+  // ... le reste de votre configuration
+}
+```
+
+Puis redémarrez le serveur. Cela affichera des logs très détaillés dans le terminal pour identifier exactement où ça coince.
+
+**Une fois le problème résolu, retirez `debug: true`** car cela affiche des informations sensibles.
 
 ## Erreurs de session
 
