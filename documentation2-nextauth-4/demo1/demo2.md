@@ -1,7 +1,7 @@
 
 ```js
 // Remplace par ta clé si besoin
-const API_KEY = "txti6hU1UXKukjaC1i6XvBYgQ2EF873pTz3y0oDV";
+const API_KEY = "txti6hU1UXKukjaC1i6XvBYgQ2EF873pTz3y0oDVqw";
 
 // Appel simple : Astronomy Picture of the Day
 fetch(`https://api.nasa.gov/planetary/apod?api_key=${API_KEY}`)
