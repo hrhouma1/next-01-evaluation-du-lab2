@@ -1345,3 +1345,325 @@ Décrivez étape par étape le workflow OAuth 2.0 quand un utilisateur clique "S
 3. Testez les configurations sur un projet réel
 4. Consultez la documentation officielle NextAuth.js
 5. Posez des questions spécifiques sur les points non compris
+
+---
+
+## Annexe D : Quiz à choix multiples (30 questions)
+
+**Instructions :** Pour chaque question, choisissez la meilleure réponse parmi les trois options proposées (A, B, ou C).
+
+**Question 1**
+Quelle est la différence principale entre authentification et autorisation ?
+
+A) L'authentification utilise HTTPS, l'autorisation utilise HTTP
+B) L'authentification vérifie l'identité, l'autorisation contrôle les permissions
+C) L'authentification est côté client, l'autorisation est côté serveur
+
+**Réponse correcte : B**
+
+**Question 2**
+Combien y a-t-il de facteurs d'authentification dans le modèle de sécurité standard ?
+
+A) 2 facteurs
+B) 3 facteurs
+C) 4 facteurs
+
+**Réponse correcte : B**
+
+**Question 3**
+Que signifie l'acronyme JWT ?
+
+A) JavaScript Web Token
+B) JSON Web Token
+C) Java Web Technology
+
+**Réponse correcte : B**
+
+**Question 4**
+Quel est le principal avantage des sessions JWT par rapport aux sessions traditionnelles ?
+
+A) Plus sécurisé car crypté
+B) Stateless et scalable
+C) Plus rapide à générer
+
+**Réponse correcte : B**
+
+**Question 5**
+Que signifie l'acronyme SSO ?
+
+A) Secure Socket Options
+B) Server Side Operations
+C) Single Sign-On
+
+**Réponse correcte : C**
+
+**Question 6**
+Pourquoi ne faut-il jamais stocker les mots de passe en clair dans la base de données ?
+
+A) Cela prend trop d'espace de stockage
+B) En cas de fuite de données, tous les mots de passe seraient compromis
+C) Les performances de la base de données seraient dégradées
+
+**Réponse correcte : B**
+
+**Question 7**
+Quel algorithme de hachage est recommandé pour les mots de passe ?
+
+A) MD5
+B) SHA-1
+C) bcrypt
+
+**Réponse correcte : C**
+
+**Question 8**
+Que signifie l'acronyme CSRF ?
+
+A) Cross-Site Request Forgery
+B) Client-Server Request Framework
+C) Cascading Style Request Format
+
+**Réponse correcte : A**
+
+**Question 9**
+Quelle protection offre le flag "httpOnly" sur les cookies ?
+
+A) Empêche la transmission en HTTP
+B) Empêche l'accès JavaScript au cookie
+C) Accélère la transmission du cookie
+
+**Réponse correcte : B**
+
+**Question 10**
+Dans le workflow OAuth 2.0, que reçoit l'application après l'autorisation de l'utilisateur ?
+
+A) Directement le profil utilisateur
+B) Un code d'autorisation temporaire
+C) Le mot de passe de l'utilisateur
+
+**Réponse correcte : B**
+
+**Question 11**
+NextAuth.js est principalement conçu pour résoudre quel aspect de la sécurité ?
+
+A) L'authentification
+B) L'autorisation
+C) Le chiffrement des données
+
+**Réponse correcte : A**
+
+**Question 12**
+Combien de types de providers NextAuth.js supporte-t-il ?
+
+A) 2 types (OAuth et Credentials)
+B) 3 types (OAuth, Email, Credentials)
+C) 4 types (OAuth, Email, Credentials, Biometric)
+
+**Réponse correcte : B**
+
+**Question 13**
+Quelle est la stratégie de session par défaut recommandée dans NextAuth.js ?
+
+A) database
+B) jwt
+C) memory
+
+**Réponse correcte : B**
+
+**Question 14**
+Où sont stockés les providers NextAuth.js dans la configuration ?
+
+A) Dans le fichier .env
+B) Dans le fichier authOptions
+C) Dans le middleware.ts
+
+**Réponse correcte : B**
+
+**Question 15**
+Que fait le callback "session" dans NextAuth.js ?
+
+A) Crée une nouvelle session
+B) Supprime la session expirée
+C) Enrichit les données de session côté client
+
+**Réponse correcte : C**
+
+**Question 16**
+Comment protéger une API route Next.js avec NextAuth.js ?
+
+A) Utiliser getServerSession() et vérifier la session
+B) Ajouter un middleware dans package.json
+C) Configurer un reverse proxy
+
+**Réponse correcte : A**
+
+**Question 17**
+Qu'est-ce qu'une attaque par force brute ?
+
+A) Surcharger le serveur avec trop de requêtes simultanées
+B) Tenter massivement des combinaisons login/mot de passe
+C) Injecter du code malveillant dans les formulaires
+
+**Réponse correcte : B**
+
+**Question 18**
+Quelle technique permet de limiter les attaques par force brute ?
+
+A) CORS (Cross-Origin Resource Sharing)
+B) Rate limiting
+C) SSL/TLS encryption
+
+**Réponse correcte : B**
+
+**Question 19**
+Qu'est-ce qu'un "Magic Link" ?
+
+A) Un lien vers la documentation
+B) Un lien de connexion temporaire envoyé par email
+C) Un lien vers les réseaux sociaux
+
+**Réponse correcte : B**
+
+**Question 20**
+Dans quel cas utiliser CredentialsProvider plutôt qu'un OAuth provider ?
+
+A) Pour une application mobile
+B) Pour un contrôle total sur l'authentification
+C) Pour une meilleure performance
+
+**Réponse correcte : B**
+
+**Question 21**
+Que signifie le terme "stateless" concernant les JWT ?
+
+A) Le token ne contient pas d'informations
+B) Le serveur n'a pas besoin de stocker l'état de session
+C) Le token ne peut pas être modifié
+
+**Réponse correcte : B**
+
+**Question 22**
+Quelle est la durée de vie recommandée pour un JWT d'authentification ?
+
+A) 1 heure
+B) 24 heures
+C) 7 jours
+
+**Réponse correcte : C (selon la configuration du cours)**
+
+**Question 23**
+Qu'est-ce que le RBAC (Role-Based Access Control) ?
+
+A) Un système où les permissions sont groupées en rôles
+B) Un protocole de communication réseau
+C) Un algorithme de chiffrement
+
+**Réponse correcte : A**
+
+**Question 24**
+Dans NextAuth.js, où configure-t-on les variables d'environnement sensibles ?
+
+A) Dans authOptions
+B) Dans le fichier .env
+C) Dans middleware.ts
+
+**Réponse correcte : B**
+
+**Question 25**
+Quel est l'avantage principal de l'OAuth par rapport aux mots de passe ?
+
+A) Plus rapide à implémenter
+B) L'utilisateur n'a pas besoin de créer un nouveau mot de passe
+C) Meilleure performance du serveur
+
+**Réponse correcte : B**
+
+**Question 26**
+Qu'est-ce qu'une attaque par timing ?
+
+A) Attaquer le serveur à des heures précises
+B) Analyser les temps de réponse pour déduire des informations
+C) Synchroniser plusieurs attaques simultanément
+
+**Réponse correcte : B**
+
+**Question 27**
+Que fait la configuration "sameSite" sur les cookies ?
+
+A) Partage les cookies entre domaines
+B) Protège contre les attaques CSRF
+C) Accélère la transmission des cookies
+
+**Réponse correcte : B**
+
+**Question 28**
+Dans quels cas NextAuth.js n'est PAS recommandé ?
+
+A) Applications Next.js simples
+B) Applications avec besoins d'autorisation très complexes
+C) Applications avec authentification Google
+
+**Réponse correcte : B**
+
+**Question 29**
+Que contient la partie "payload" d'un JWT ?
+
+A) La signature cryptographique
+B) Les informations utilisateur et métadonnées
+C) L'algorithme de chiffrement utilisé
+
+**Réponse correcte : B**
+
+**Question 30**
+Quel est le rôle du middleware.ts dans une application Next.js avec NextAuth ?
+
+A) Gérer la base de données
+B) Protéger les routes et vérifier les autorisations
+C) Configurer les providers OAuth
+
+**Réponse correcte : B**
+
+---
+
+### Correction du quiz à choix multiples
+
+**Réponses correctes :**
+
+1. B - L'authentification vérifie l'identité, l'autorisation contrôle les permissions
+2. B - 3 facteurs (connaissance, possession, inhérence)
+3. B - JSON Web Token
+4. B - Stateless et scalable
+5. C - Single Sign-On
+6. B - En cas de fuite de données, tous les mots de passe seraient compromis
+7. C - bcrypt (avec sel et coût adaptatif)
+8. A - Cross-Site Request Forgery
+9. B - Empêche l'accès JavaScript au cookie
+10. B - Un code d'autorisation temporaire
+11. A - L'authentification (principalement)
+12. B - 3 types (OAuth, Email, Credentials)
+13. B - jwt (stateless, scalable)
+14. B - Dans le fichier authOptions
+15. C - Enrichit les données de session côté client
+16. A - Utiliser getServerSession() et vérifier la session
+17. B - Tenter massivement des combinaisons login/mot de passe
+18. B - Rate limiting (limitation du taux de requêtes)
+19. B - Un lien de connexion temporaire envoyé par email
+20. B - Pour un contrôle total sur l'authentification
+21. B - Le serveur n'a pas besoin de stocker l'état de session
+22. C - 7 jours (selon configuration exemple du cours)
+23. A - Un système où les permissions sont groupées en rôles
+24. B - Dans le fichier .env
+25. B - L'utilisateur n'a pas besoin de créer un nouveau mot de passe
+26. B - Analyser les temps de réponse pour déduire des informations
+27. B - Protège contre les attaques CSRF
+28. B - Applications avec besoins d'autorisation très complexes
+29. B - Les informations utilisateur et métadonnées
+30. B - Protéger les routes et vérifier les autorisations
+
+**Barème :** 30 questions × 1 point = 30 points total
+
+**Notation :**
+- 27-30 points : Excellente maîtrise (90-100%)
+- 24-26 points : Bonne compréhension (80-89%)
+- 21-23 points : Compréhension correcte (70-79%)
+- 18-20 points : Compréhension partielle (60-69%)
+- <18 points : Révisions nécessaires (<60%)
