@@ -18,11 +18,11 @@ Ce guide vous apprendra à construire un système complet qui permet aux utilisa
 
 ### Pourquoi NextAuth.js v4 ?
 NextAuth.js v4 est comme un **système de sécurité professionnel pré-installé** pour votre immeuble :
-- ✅ **Déjà testé et sécurisé** - utilisé par des milliers d'applications réelles
-- ✅ **Facile à installer** - quelques lignes de code au lieu de centaines
-- ✅ **Compatible avec tout** - Google, Facebook, email/mot de passe, etc.
-- ✅ **Gère les sessions** - se souvient automatiquement qui est connecté
-- ✅ **Protège contre les attaques** - cryptage, hachage, protection CSRF intégrés
+- **Déjà testé et sécurisé** - utilisé par des milliers d'applications réelles
+- **Facile à installer** - quelques lignes de code au lieu de centaines
+- **Compatible avec tout** - Google, Facebook, email/mot de passe, etc.
+- **Gère les sessions** - se souvient automatiquement qui est connecté
+- **Protège contre les attaques** - cryptage, hachage, protection CSRF intégrés
 
 ## Prérequis - Vérifiez que vous avez tout
 
@@ -53,7 +53,7 @@ Avant de commencer, assurez-vous d'avoir :
 
 ### Vocabulaire technique essentiel
 
-**🔑 Termes que vous entendrez souvent :**
+**Termes que vous entendrez souvent :**
 
 - **Provider** = Fournisseur d'authentification (Google, GitHub, email/mot de passe)
   - *Analogie* : Comme différentes façons d'entrer dans l'immeuble (badge, code, empreinte)
@@ -74,53 +74,53 @@ Avant de commencer, assurez-vous d'avoir :
 
 ### Votre application aura toutes ces fonctionnalités :
 
-**🔐 Authentification multi-fournisseurs** (email/mot de passe, Google, GitHub)
+**Authentification multi-fournisseurs** (email/mot de passe, Google, GitHub)
 - *Concrètement* : Vos utilisateurs pourront se connecter de 3 façons différentes
 - *Pourquoi* : Plus de choix = plus d'utilisateurs satisfaits
 
-**📱 Pages de connexion et inscription sécurisées**
+**Pages de connexion et inscription sécurisées**
 - *Concrètement* : De belles pages `/auth/signin` et `/auth/signup` avec formulaires
 - *Inclus* : Validation des données, messages d'erreur clairs, design responsive
 
-**🛡️ Protection automatique des routes sensibles**
+**Protection automatique des routes sensibles**
 - *Concrètement* : Certaines pages ne seront accessibles qu'aux utilisateurs connectés
 - *Exemple* : `/products/new` redirigera vers la page de connexion si pas connecté
 
-**🔒 APIs protégées avec middleware**  
+**APIs protégées avec middleware**  
 - *Concrètement* : Certaines actions (créer, modifier, supprimer) nécessiteront une connexion
 - *Technique* : Le middleware = garde du corps automatique de vos APIs
 
-**🎨 Interface utilisateur adaptative selon l'état de connexion**
+**Interface utilisateur adaptative selon l'état de connexion**
 - *Concrètement* : Le menu change automatiquement (bouton "Connexion" devient "Déconnexion")
 - *Magie* : L'interface "sait" en temps réel qui est connecté
 
-**👤 Gestion des rôles utilisateurs** (user, admin)
+**Gestion des rôles utilisateurs** (user, admin)
 - *Concrètement* : Certains utilisateurs auront plus de privilèges que d'autres
 - *Extensible* : Vous pourrez ajouter d'autres rôles (modérateur, premium, etc.)
 
-**🔐 Sessions sécurisées avec JWT**
+**Sessions sécurisées avec JWT**
 - *Concrètement* : Les utilisateurs restent connectés même s'ils ferment le navigateur
 - *Sécurité* : Tokens cryptés, expiration automatique, protection contre le vol
 
 ## Étape 1 : Création d'une nouvelle branche - Sécurisez votre travail
 
-### 🤔 Pourquoi créer une branche séparée ?
+### Pourquoi créer une branche séparée ?
 Imaginez que vous rénoviez votre appartement. Vous ne voulez pas dormir dans le chantier ! 
 Une branche Git, c'est comme créer une **copie parallèle** de votre code où vous pouvez expérimenter sans risquer de casser la version qui fonctionne.
 
-### 📝 Analogie simple
+### Analogie simple
 - **Branche principale (main)** = votre appartement actuel (fonctionnel)
 - **Nouvelle branche** = appartement témoin où vous testez la nouvelle déco
 - Si ça marche → vous adoptez la nouvelle déco (merge)
 - Si ça ne marche pas → vous abandonnez et gardez l'ancien (suppression de branche)
 
-### 💻 Commandes à exécuter
+### Commandes à exécuter
 
 ```bash
 # COMMANDE 1 : Créer et basculer sur une nouvelle branche
 git checkout -b feature/nextauth-implementation
 
-# 🔍 Explication : 
+# Explication : 
 # - "git checkout" = changer de branche
 # - "-b" = créer une nouvelle branche  
 # - "feature/nextauth-implementation" = nom descriptif de notre nouvelle fonctionnalité
@@ -130,26 +130,26 @@ git checkout -b feature/nextauth-implementation
 # COMMANDE 2 : Vérifier que vous êtes sur la bonne branche  
 git branch
 
-# 🔍 Ce que vous devriez voir :
+# Ce que vous devriez voir :
 #   main
 # * feature/nextauth-implementation    ← L'étoile (*) indique la branche active
 ```
 
-**✅ Résultat attendu :** Vous devriez voir une étoile (*) devant `feature/nextauth-implementation`.
+**Résultat attendu :** Vous devriez voir une étoile (*) devant `feature/nextauth-implementation`.
 
-### ❌ Si ça ne marche pas
+### Si ça ne marche pas
 - **Erreur "git command not found"** → Git n'est pas installé sur votre machine
 - **Pas d'étoile à côté du bon nom** → Relancez `git checkout feature/nextauth-implementation`
 
 ## Étape 2 : Installation des packages NextAuth - Ajoutons les outils
 
-### 🤔 Qu'est-ce qu'un package ?
+### Qu'est-ce qu'un package ?
 Un package, c'est comme un **kit de meubles IKEA** pour développeurs :
 - Quelqu'un a déjà écrit le code complexe
 - Vous l'installez et l'utilisez dans votre projet  
 - Gain de temps énorme : des milliers de lignes de code prêtes à l'emploi !
 
-### 📦 Les 4 packages que nous allons installer
+### Les 4 packages que nous allons installer
 
 **1. `next-auth@4` - Le package principal**
 ```bash
@@ -184,7 +184,7 @@ npm install @types/bcryptjs
 - *Analogie* : C'est comme le mode d'emploi en français pour un appareil étranger
 - *Pour les débutants* : TypeScript = JavaScript avec vérification d'erreurs automatique
 
-### 🔄 Processus d'installation complet
+### Processus d'installation complet
 
 ```bash
 # ÉTAPE 1 : Package principal NextAuth v4 (stable et testé)
@@ -200,31 +200,31 @@ npm install bcryptjs
 npm install @types/bcryptjs
 ```
 
-### ⚠️ IMPORTANT - Attendez entre chaque installation !
+### IMPORTANT - Attendez entre chaque installation !
 **Pourquoi ?** Chaque `npm install` télécharge et configure des fichiers. Si vous lancez tout d'un coup, ça peut créer des conflits.
 
-**✅ Comment savoir que c'est terminé ?**
+**Comment savoir que c'est terminé ?**
 - L'installation est finie quand vous voyez à nouveau votre prompt (ex: `PS C:\votre-projet>`)
 - Pas de messages d'erreur en rouge
 - Un message comme "added X packages" apparaît
 
-### 🎯 Vérification que tout est installé
+### Vérification que tout est installé
 ```bash
 # Vérifier que les packages sont bien installés
 npm list next-auth @next-auth/prisma-adapter bcryptjs @types/bcryptjs
 
-# 🔍 Vous devriez voir quelque chose comme :
+# Vous devriez voir quelque chose comme :
 # ├── next-auth@4.24.7
 # ├── @next-auth/prisma-adapter@1.0.7  
 # ├── bcryptjs@2.4.3
 # └── @types/bcryptjs@2.4.6
 ```
 
-**💡 Si vous voyez des versions légèrement différentes, c'est normal !**
+**Si vous voyez des versions légèrement différentes, c'est normal !**
 
 ## Étape 3 : Configuration des variables d'environnement - Les secrets de votre app
 
-### 🤔 C'est quoi les variables d'environnement ?
+### C'est quoi les variables d'environnement ?
 
 **Analogie simple :** Les variables d'environnement, c'est comme le **coffre-fort secret** de votre application.
 
@@ -232,12 +232,12 @@ npm list next-auth @next-auth/prisma-adapter bcryptjs @types/bcryptjs
 - **Variables d'environnement** = cachées et sécurisées (comme les codes du coffre-fort)
 
 **Exemples de ce qu'on y met :**
-- 🔑 Mots de passe de base de données
-- 🗝️ Clés secrètes pour l'authentification  
-- 🎫 Identifiants API (Google, Facebook, etc.)
-- 🌍 URLs qui changent selon l'environnement (localhost vs production)
+- Mots de passe de base de données
+- Clés secrètes pour l'authentification  
+- Identifiants API (Google, Facebook, etc.)
+- URLs qui changent selon l'environnement (localhost vs production)
 
-### 📂 Le fichier `.env` - Votre coffre-fort numérique
+### Le fichier `.env` - Votre coffre-fort numérique
 
 **Où se trouve ce fichier ?**
 - À la **racine** de votre projet (même niveau que `package.json`)
@@ -247,7 +247,7 @@ npm list next-auth @next-auth/prisma-adapter bcryptjs @types/bcryptjs
 1. Si le fichier `.env` n'existe pas → créez-le
 2. Si il existe déjà → ouvrez-le et ajoutez les nouvelles lignes
 
-### 🔧 Configuration étape par étape
+### Configuration étape par étape
 
 **Ouvrez votre fichier `.env` et ajoutez ces lignes :**
 
@@ -262,16 +262,16 @@ DATABASE_URL="votre-url-de-base-de-donnees-existante"
 # NOUVELLES VARIABLES NEXTAUTH - À AJOUTER
 # ============================================
 
-# 🌐 URL de votre application
+# URL de votre application
 NEXTAUTH_URL="http://localhost:3000"
-# 🔍 Explication : 
+# Explication : 
 # - NextAuth doit savoir où tourne votre app pour rediriger correctement
 # - "localhost:3000" = votre ordinateur, port 3000
 # - Si votre app tourne sur le port 3001, changez en "http://localhost:3001"
 
-# 🔐 Clé secrète super importante (CHANGEZ CETTE VALEUR !)
+# Clé secrète super importante (CHANGEZ CETTE VALEUR !)
 NEXTAUTH_SECRET="your-super-secret-key-minimum-32-characters-long-and-unique"
-# 🔍 Explication :
+# Explication :
 # - Cette clé sert à crypter les tokens de session
 # - OBLIGATOIRE : doit faire au moins 32 caractères
 # - UNIQUE : changez absolument la valeur par défaut !
@@ -282,20 +282,20 @@ NEXTAUTH_SECRET="your-super-secret-key-minimum-32-characters-long-and-unique"
 # ============================================
 # Laissez vide pour le moment, on configurera plus tard si besoin
 
-# 📧 Google OAuth (pour "Se connecter avec Google")
+# Google OAuth (pour "Se connecter avec Google")
 GOOGLE_CLIENT_ID=""
 GOOGLE_CLIENT_SECRET=""
-# 🔍 Ces valeurs viennent de la Google Console (étape optionnelle)
+# Ces valeurs viennent de la Google Console (étape optionnelle)
 
-# 🐙 GitHub OAuth (pour "Se connecter avec GitHub")  
+# GitHub OAuth (pour "Se connecter avec GitHub")  
 GITHUB_ID=""
 GITHUB_SECRET=""
-# 🔍 Ces valeurs viennent des GitHub Developer Settings (étape optionnelle)
+# Ces valeurs viennent des GitHub Developer Settings (étape optionnelle)
 ```
 
-### 🔥 SUPER IMPORTANT - Sécurité du fichier `.env`
+### SUPER IMPORTANT - Sécurité du fichier `.env`
 
-**⚠️ RÈGLES D'OR À RESPECTER ABSOLUMENT :**
+**RÈGLES D'OR À RESPECTER ABSOLUMENT :**
 
 1. **Ne JAMAIS publier le fichier `.env`**
    - Ni sur GitHub, ni nulle part publiquement
@@ -310,14 +310,14 @@ GITHUB_SECRET=""
 
 3. **Changez OBLIGATOIREMENT `NEXTAUTH_SECRET`**
    ```env
-   # ❌ MAUVAIS (valeur par défaut)
+   # MAUVAIS (valeur par défaut)
    NEXTAUTH_SECRET="changez-cette-clé-secrète"
    
-   # ✅ BON (valeur unique et longue)
+   # BON (valeur unique et longue)
    NEXTAUTH_SECRET="mon-projet-2024-secret-authentication-key-unique-xyz789"
    ```
 
-### 🎯 Génération d'une bonne clé secrète
+### Génération d'une bonne clé secrète
 
 **Méthode 1 : Générateur en ligne**
 - Allez sur https://generate-secret.vercel.app/32
@@ -336,7 +336,7 @@ openssl rand -base64 32
 - Tapez n'importe quoi de long et unique
 - Exemple : `"mon-app-NextAuth-2024-secret-ultra-long-unique-123456789"`
 
-### 🔍 Vérification de votre configuration
+### Vérification de votre configuration
 
 **Votre fichier `.env` final devrait ressembler à ça :**
 
@@ -355,7 +355,7 @@ GITHUB_ID=""
 GITHUB_SECRET=""
 ```
 
-### 🛠️ Adaptations selon votre situation
+### Adaptations selon votre situation
 
 **Si votre serveur démarre sur le port 3001 :**
 ```env
@@ -374,7 +374,7 @@ NEXTAUTH_URL="http://localhost:3000"  # ← Identique
 NEXTAUTH_URL="https://votre-domaine.com"  # ← URL réelle de votre site
 ```
 
-### ✅ Test que tout fonctionne
+### Test que tout fonctionne
 
 1. **Sauvegardez le fichier `.env`**
 2. **Redémarrez votre serveur de développement** (important !)
@@ -386,7 +386,7 @@ NEXTAUTH_URL="https://votre-domaine.com"  # ← URL réelle de votre site
 
 ## Étape 4 : Mise à jour du schéma Prisma - Définir la structure de votre base de données
 
-### 🤔 C'est quoi Prisma et le schéma ?
+### C'est quoi Prisma et le schéma ?
 
 **Prisma** = votre **assistant personnel pour base de données**
 - Il traduit votre code JavaScript en langage SQL (que comprend la base de données)
@@ -398,7 +398,7 @@ NEXTAUTH_URL="https://votre-domaine.com"  # ← URL réelle de votre site
 - Vous décrivez vos "tables" (modèles) dans un fichier texte simple
 - Prisma transforme ce plan en vraie base de données
 
-### 📋 Analogie : Votre base de données comme un immeuble
+### Analogie : Votre base de données comme un immeuble
 
 Imaginez que vous gérez un immeuble d'appartements avec plusieurs registres :
 
@@ -412,13 +412,13 @@ Imaginez que vous gérez un immeuble d'appartements avec plusieurs registres :
 - "Cette session correspond à cet utilisateur"
 - "Ce compte externe (Google) est lié à cet utilisateur"
 
-### 📂 Localisation du fichier
+### Localisation du fichier
 
 **Où se trouve le schéma ?**
 - Fichier : `prisma/schema.prisma`
 - Si ce dossier/fichier n'existe pas → votre projet n'a pas Prisma configuré (vérifiez les prérequis !)
 
-### 🎯 Ce que nous allons ajouter
+### Ce que nous allons ajouter
 
 **Votre schéma actuel** (modèle Product existant) :
 ```prisma
@@ -436,7 +436,7 @@ model Product {
 - `Session` = sessions actives
 - `VerificationToken` = tokens de vérification email
 
-### 🔧 Modification étape par étape
+### Modification étape par étape
 
 **Ouvrez le fichier `prisma/schema.prisma` et ajoutez ces modèles À LA FIN du fichier :**
 
@@ -453,10 +453,10 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // 👇 AJOUTEZ CES 2 LIGNES pour créer un lien avec l'utilisateur qui a créé le produit
+  // AJOUTEZ CES 2 LIGNES pour créer un lien avec l'utilisateur qui a créé le produit
   createdBy   User?  @relation(fields: [createdById], references: [id])
   createdById String?
-  // 🔍 Explication :
+  // Explication :
   // - createdBy = référence vers l'utilisateur qui a créé ce produit
   // - createdById = ID de cet utilisateur (clé étrangère)
   // - User? = optionnel (certains produits peuvent ne pas avoir de créateur)
@@ -470,98 +470,98 @@ model Product {
 // ============================================
 // Copiez tous ces modèles À LA FIN de votre fichier schema.prisma
 
-// 👤 MODÈLE USER - Table des utilisateurs (résidents de votre immeuble)
+// MODÈLE USER - Table des utilisateurs (résidents de votre immeuble)
 model User {
   // === IDENTITÉ DE BASE ===
   id            String    @id @default(cuid())
-  // 🔍 cuid() = identifiant unique aléatoire (ex: "cljn123xyz")
-  // 🔍 @id = clé primaire (identifiant unique de chaque utilisateur)
+  // cuid() = identifiant unique aléatoire (ex: "cljn123xyz")
+  // @id = clé primaire (identifiant unique de chaque utilisateur)
 
   name          String?
-  // 🔍 String? = texte optionnel (certains utilisateurs n'ont pas de nom affiché)
+  // String? = texte optionnel (certains utilisateurs n'ont pas de nom affiché)
 
   email         String    @unique
-  // 🔍 @unique = chaque email ne peut être utilisé qu'une fois
-  // 🔍 Obligatoire pour identifier l'utilisateur
+  // @unique = chaque email ne peut être utilisé qu'une fois
+  // Obligatoire pour identifier l'utilisateur
 
   password      String?   
-  // 🔍 Mot de passe haché (crypté) pour l'authentification locale
-  // 🔍 String? = optionnel car certains utilisateurs se connectent via Google/GitHub uniquement
+  // Mot de passe haché (crypté) pour l'authentification locale
+  // String? = optionnel car certains utilisateurs se connectent via Google/GitHub uniquement
 
   // === MÉTADONNÉES ===
   emailVerified DateTime?
-  // 🔍 Date de vérification de l'email (null = pas encore vérifié)
+  // Date de vérification de l'email (null = pas encore vérifié)
 
   image         String?   
-  // 🔍 URL de la photo de profil (optionnel)
+  // URL de la photo de profil (optionnel)
 
   role          String    @default("user")
-  // 🔍 Rôle de l'utilisateur : "user" par défaut, peut être "admin"
-  // 🔍 @default("user") = valeur automatique si pas spécifiée
+  // Rôle de l'utilisateur : "user" par défaut, peut être "admin"
+  // @default("user") = valeur automatique si pas spécifiée
 
   createdAt     DateTime  @default(now())
-  // 🔍 Date de création du compte (automatique)
+  // Date de création du compte (automatique)
 
   updatedAt     DateTime  @updatedAt
-  // 🔍 Date de dernière modification (mise à jour automatique)
+  // Date de dernière modification (mise à jour automatique)
 
   // === RELATIONS AVEC D'AUTRES TABLES ===
-  // 🔗 Relations NextAuth (OBLIGATOIRES pour que NextAuth fonctionne)
+  // Relations NextAuth (OBLIGATOIRES pour que NextAuth fonctionne)
   accounts Account[]
-  // 🔍 Un utilisateur peut avoir plusieurs comptes (Google + GitHub + local)
+  // Un utilisateur peut avoir plusieurs comptes (Google + GitHub + local)
 
   sessions Session[]
-  // 🔍 Un utilisateur peut avoir plusieurs sessions actives (téléphone + ordinateur)
+  // Un utilisateur peut avoir plusieurs sessions actives (téléphone + ordinateur)
 
-  // 🔗 Relations métier (pour votre application)
+  // Relations métier (pour votre application)
   products Product[]
-  // 🔍 Un utilisateur peut créer plusieurs produits
+  // Un utilisateur peut créer plusieurs produits
 
   @@map("users")
-  // 🔍 @@map("users") = le nom de la table en base sera "users" (au pluriel)
+  // @@map("users") = le nom de la table en base sera "users" (au pluriel)
 }
 
-// 🔗 MODÈLE ACCOUNT - Comptes externes (Google, GitHub, etc.)
+// MODÈLE ACCOUNT - Comptes externes (Google, GitHub, etc.)
 model Account {
   // === IDENTITÉ DU COMPTE ===
   id                String  @id @default(cuid())
-  // 🔍 Identifiant unique de ce compte externe
+  // Identifiant unique de ce compte externe
 
   userId            String  @map("user_id")
-  // 🔍 ID de l'utilisateur auquel ce compte est rattaché
-  // 🔍 @map("user_id") = le champ s'appellera "user_id" dans la base de données
+  // ID de l'utilisateur auquel ce compte est rattaché
+  // @map("user_id") = le champ s'appellera "user_id" dans la base de données
 
   type              String
-  // 🔍 Type de compte : "oauth", "email", etc.
+  // Type de compte : "oauth", "email", etc.
 
   provider          String
-  // 🔍 Fournisseur : "google", "github", "facebook", etc.
+  // Fournisseur : "google", "github", "facebook", etc.
 
   providerAccountId String  @map("provider_account_id")
-  // 🔍 ID de l'utilisateur chez le fournisseur (ex: ID Google de l'utilisateur)
+  // ID de l'utilisateur chez le fournisseur (ex: ID Google de l'utilisateur)
 
   // === TOKENS OAUTH (pour se connecter aux APIs externes) ===
   refresh_token     String? @db.Text
-  // 🔍 Token pour renouveler l'accès quand il expire
-  // 🔍 @db.Text = type TEXTE LONG en base de données (tokens peuvent être longs)
+  // Token pour renouveler l'accès quand il expire
+  // @db.Text = type TEXTE LONG en base de données (tokens peuvent être longs)
 
   access_token      String? @db.Text
-  // 🔍 Token pour accéder aux données de l'utilisateur chez le fournisseur
+  // Token pour accéder aux données de l'utilisateur chez le fournisseur
 
   expires_at        Int?
-  // 🔍 Timestamp d'expiration du token
+  // Timestamp d'expiration du token
 
   token_type        String?
-  // 🔍 Type de token (généralement "Bearer")
+  // Type de token (généralement "Bearer")
 
   scope             String?
-  // 🔍 Permissions accordées (ex: "read_user", "read_repos")
+  // Permissions accordées (ex: "read_user", "read_repos")
 
   id_token          String? @db.Text
-  // 🔍 Token d'identité (contient les infos de base de l'utilisateur)
+  // Token d'identité (contient les infos de base de l'utilisateur)
 
   session_state     String?
-  // 🔍 État de la session OAuth
+  // État de la session OAuth
 
   // === MÉTADONNÉES ===
   createdAt         DateTime @default(now()) @map("created_at")
@@ -569,85 +569,85 @@ model Account {
 
   // === RELATION ===
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  // 🔍 Ce compte appartient à un utilisateur
-  // 🔍 onDelete: Cascade = si l'utilisateur est supprimé, ses comptes aussi
+  // Ce compte appartient à un utilisateur
+  // onDelete: Cascade = si l'utilisateur est supprimé, ses comptes aussi
 
   @@unique([provider, providerAccountId])
-  // 🔍 Un utilisateur ne peut avoir qu'un seul compte par fournisseur
-  // 🔍 Exemple : un seul compte Google par utilisateur
+  // Un utilisateur ne peut avoir qu'un seul compte par fournisseur
+  // Exemple : un seul compte Google par utilisateur
 
   @@map("accounts")
 }
 
-// 🎫 MODÈLE SESSION - Sessions actives (bracelets temporaires)
+// MODÈLE SESSION - Sessions actives (bracelets temporaires)
 model Session {
   id           String   @id @default(cuid())
-  // 🔍 Identifiant unique de la session
+  // Identifiant unique de la session
 
   sessionToken String   @unique @map("session_token")
-  // 🔍 Token de session (code secret temporaire)
-  // 🔍 @unique = chaque token de session est unique
+  // Token de session (code secret temporaire)
+  // @unique = chaque token de session est unique
 
   userId       String   @map("user_id")
-  // 🔍 Utilisateur auquel appartient cette session
+  // Utilisateur auquel appartient cette session
 
   expires      DateTime
-  // 🔍 Date d'expiration de la session
+  // Date d'expiration de la session
 
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   // === RELATION ===
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  // 🔍 Cette session appartient à un utilisateur
-  // 🔍 Si l'utilisateur est supprimé, ses sessions aussi
+  // Cette session appartient à un utilisateur
+  // Si l'utilisateur est supprimé, ses sessions aussi
 
   @@map("sessions")
 }
 
-// 🔐 MODÈLE VERIFICATION TOKEN - Tokens de vérification email
+// MODÈLE VERIFICATION TOKEN - Tokens de vérification email
 model VerificationToken {
   identifier String
-  // 🔍 Identifiant (généralement l'email à vérifier)
+  // Identifiant (généralement l'email à vérifier)
 
   token      String
-  // 🔍 Token de vérification (code temporaire envoyé par email)
+  // Token de vérification (code temporaire envoyé par email)
 
   expires    DateTime
-  // 🔍 Date d'expiration du token
+  // Date d'expiration du token
 
   @@unique([identifier, token])
-  // 🔍 Combinaison identifier+token unique
-  // 🔍 Empêche la réutilisation de tokens
+  // Combinaison identifier+token unique
+  // Empêche la réutilisation de tokens
 
   @@map("verificationtokens")
 }
 ```
 
-### 📚 Explication des concepts Prisma pour débutants
+### Explication des concepts Prisma pour débutants
 
-**🔑 Types de données courants :**
+**Types de données courants :**
 - `String` = texte (ex: "John", "john@email.com")
 - `String?` = texte optionnel (peut être vide)
 - `Int` = nombre entier (1, 2, 100)
 - `DateTime` = date et heure
 - `Boolean` = vrai/faux
 
-**🎯 Attributs importants :**
+**Attributs importants :**
 - `@id` = clé primaire (identifiant unique)
 - `@unique` = valeur unique dans toute la table
 - `@default(...)` = valeur par défaut
 - `@map("...")` = nom différent en base de données
 - `@@map("...")` = nom de table en base de données
 
-**🔗 Relations expliquées :**
+**Relations expliquées :**
 - `products Product[]` = "un utilisateur peut avoir plusieurs produits"
 - `user User @relation(...)` = "ce compte appartient à un utilisateur"
 - `onDelete: Cascade` = "si le parent est supprimé, supprime aussi l'enfant"
 
 ## Étape 5 : Application des changements à la base de données - Transformer le plan en réalité
 
-### 🤔 Que font ces commandes ?
+### Que font ces commandes ?
 
 Vous venez de **dessiner le plan** de votre base de données (schéma Prisma). Maintenant il faut **construire la vraie maison** !
 
@@ -656,18 +656,18 @@ Vous venez de **dessiner le plan** de votre base de données (schéma Prisma). M
 2. **`npx prisma generate`** = fabriquer les outils spécialisés pour cette maison 
 3. **`npx prisma db push`** = construire physiquement la maison selon le plan
 
-### 🔧 Commande 1 : Génération du client Prisma
+### Commande 1 : Génération du client Prisma
 
 ```bash
 npx prisma generate
 ```
 
-**🔍 Cette commande fait quoi exactement ?**
+**Cette commande fait quoi exactement ?**
 - **Lit votre schéma** (le plan d'architecte)
 - **Génère du code TypeScript** automatiquement
 - **Crée des fonctions** pour chaque modèle (User, Product, Session, etc.)
 
-**🎯 Concrètement, après cette commande vous pourrez écrire :**
+**Concrètement, après cette commande vous pourrez écrire :**
 ```typescript
 // Créer un utilisateur (fonction générée automatiquement)
 const newUser = await prisma.user.create({
@@ -680,37 +680,37 @@ const product = await prisma.product.findUnique({
 })
 ```
 
-**✅ Résultat attendu :**
+**Résultat attendu :**
 ```
 ✔ Generated Prisma Client (4.16.2 | library) to ./node_modules/.prisma/client in 234ms
 
 You can now start using Prisma Client in your code. Reference: https://pris.ly/d/client
 ```
 
-**❌ Erreurs possibles :**
+**Erreurs possibles :**
 - `"Schema parsing error"` → Erreur de syntaxe dans le schéma (vérifiez les accolades, virgules)
 - `"Command not found"` → Prisma n'est pas installé (`npm install prisma @prisma/client`)
 
-### 🏗️ Commande 2 : Mise à jour de la base de données
+### Commande 2 : Mise à jour de la base de données
 
 ```bash
 npx prisma db push
 ```
 
-**🔍 Cette commande fait quoi exactement ?**
+** Cette commande fait quoi exactement ?**
 - **Compare** votre schéma avec la base de données actuelle
 - **Détecte les différences** (nouvelles tables, nouveaux champs)
 - **Modifie la vraie base de données** pour qu'elle corresponde au schéma
 - **Préserve les données existantes** (vos produits actuels ne seront pas supprimés)
 
-**🎯 Concrètement, cette commande va créer :**
-- ✅ Table `users` (utilisateurs)
-- ✅ Table `accounts` (comptes externes Google/GitHub)
-- ✅ Table `sessions` (sessions actives)
-- ✅ Table `verificationtokens` (tokens de vérification)
-- ✅ Modifier la table `products` (ajouter les champs `createdBy` et `createdById`)
+** Concrètement, cette commande va créer :**
+-  Table `users` (utilisateurs)
+-  Table `accounts` (comptes externes Google/GitHub)
+-  Table `sessions` (sessions actives)
+-  Table `verificationtokens` (tokens de vérification)
+-  Modifier la table `products` (ajouter les champs `createdBy` et `createdById`)
 
-**✅ Résultat attendu :**
+** Résultat attendu :**
 ```
 Environment variables loaded from .env
 Prisma schema loaded from prisma\schema.prisma
@@ -721,42 +721,42 @@ Datasource "db": PostgreSQL database "your-db", schema "public" at "your-host:54
 ✔ Generated Prisma Client (4.16.2 | library) to ./node_modules/.prisma/client in 345ms
 ```
 
-**🔍 Décodage du message :**
-- `"Your database is now in sync"` = ✅ Parfait, les tables sont créées
-- `"Generated Prisma Client"` = ✅ Le code TypeScript est à jour aussi
+** Décodage du message :**
+- `"Your database is now in sync"` =  Parfait, les tables sont créées
+- `"Generated Prisma Client"` =  Le code TypeScript est à jour aussi
 
-### ⚠️ Messages d'avertissement (normaux) 
+###  Messages d'avertissement (normaux) 
 
 Vous pourriez voir ces avertissements (c'est normal) :
 
 ```
-⚠️  There might be data loss when applying the changes:
+  There might be data loss when applying the changes:
   • You are about to create a unique constraint on the columns (email) on the users table...
 ```
 
-**🤔 Faut-il s'inquiéter ?**
+** Faut-il s'inquiéter ?**
 - **NON** si c'est la première fois que vous ajoutez l'authentification
 - **OUI** si vous avez déjà des utilisateurs avec des emails dupliqués
 
 **Pour la première installation → tapez `y` (yes) quand demandé**
 
-### 🎯 Processus complet étape par étape
+###  Processus complet étape par étape
 
 ```bash
 # ÉTAPE 1 : Générer le client Prisma (outils)
 npx prisma generate
 
-# 🔍 Attendez le message de succès avant de continuer !
-# ✅ "Generated Prisma Client" doit apparaître
+#  Attendez le message de succès avant de continuer !
+#  "Generated Prisma Client" doit apparaître
 
 # ÉTAPE 2 : Mettre à jour la base de données (construction)
 npx prisma db push
 
-# 🔍 Attendez le message "Your database is now in sync" 
-# ✅ Si demandé, tapez 'y' pour confirmer les changements
+#  Attendez le message "Your database is now in sync" 
+#  Si demandé, tapez 'y' pour confirmer les changements
 ```
 
-### 🔍 Vérification que tout a fonctionné
+###  Vérification que tout a fonctionné
 
 **Méthode 1 : Via Prisma Studio (interface graphique)**
 ```bash
@@ -771,32 +771,32 @@ npx prisma studio
 ✔ Your database is now in sync with your schema.
 ```
 
-### ❌ Résolution des problèmes courants
+###  Résolution des problèmes courants
 
 **Erreur "Connection refused" :**
 ```
 Error: connect ECONNREFUSED 127.0.0.1:5432
 ```
-- 🔍 **Problème** : La base de données n'est pas accessible
-- ✅ **Solution** : Vérifiez votre `DATABASE_URL` dans le fichier `.env`
-- ✅ **Solution** : Vérifiez que votre base PostgreSQL est démarrée
+-  **Problème** : La base de données n'est pas accessible
+-  **Solution** : Vérifiez votre `DATABASE_URL` dans le fichier `.env`
+-  **Solution** : Vérifiez que votre base PostgreSQL est démarrée
 
 **Erreur "Schema parsing error" :**
 ```
 Schema parsing error: Error validating model "User": The model name is invalid...
 ```
-- 🔍 **Problème** : Erreur de syntaxe dans le schéma
-- ✅ **Solution** : Vérifiez les accolades `{}`, les virgules, l'indentation
-- ✅ **Solution** : Comparez avec l'exemple exact fourni
+-  **Problème** : Erreur de syntaxe dans le schéma
+-  **Solution** : Vérifiez les accolades `{}`, les virgules, l'indentation
+-  **Solution** : Comparez avec l'exemple exact fourni
 
 **Erreur "Unique constraint failed" :**
 ```
 Unique constraint failed on the fields: (`email`)
 ```
-- 🔍 **Problème** : Tentative de créer des utilisateurs avec des emails identiques
-- ✅ **Solution** : Normal si vous testez, chaque email doit être unique
+-  **Problème** : Tentative de créer des utilisateurs avec des emails identiques
+-  **Solution** : Normal si vous testez, chaque email doit être unique
 
-### 🏆 Félicitations !
+###  Félicitations !
 
 Si vous voyez `"Your database is now in sync with your schema"`, c'est parfait ! 
 Votre base de données est maintenant **prête pour l'authentification NextAuth** ! 
@@ -805,7 +805,7 @@ Les fondations sont posées, on peut maintenant construire le système d'authent
 
 ## Étape 6 : Configuration NextAuth - Le cerveau du système
 
-### 🤔 C'est quoi ce fichier `lib/auth.ts` ?
+###  C'est quoi ce fichier `lib/auth.ts` ?
 
 **Analogie simple :** Ce fichier, c'est le **panneau de contrôle central** de votre système de sécurité.
 
@@ -817,11 +817,11 @@ Les fondations sont posées, on peut maintenant construire le système d'authent
 
 ### 📂 Création du fichier configuration
 
-### ✅ Configuration complète disponible
+###  Configuration complète disponible
 
 Le fichier `lib/auth.ts` est assez complexe avec beaucoup d'options. Pour ne pas surcharger ce guide d'introduction, **tous les codes complets avec commentaires détaillés** sont disponibles dans le fichier `03-CODES_COMPLETS.md`.
 
-**🎯 Ce que contient la configuration NextAuth :**
+** Ce que contient la configuration NextAuth :**
 
 1. **Extensions TypeScript** → Ajouter le champ "role" aux sessions
 2. **PrismaAdapter** → Connecter NextAuth à votre base de données  
@@ -838,24 +838,24 @@ Le fichier `lib/auth.ts` est assez complexe avec beaucoup d'options. Pour ne pas
 
 Les étapes 7 à 10 couvrent :
 
-**🗂️ Étape 7 :** Routes d'authentification (`app/api/auth/[...nextauth]/route.ts`)
+** Étape 7 :** Routes d'authentification (`app/api/auth/[...nextauth]/route.ts`)
 - *C'est quoi* : Le "central téléphonique" de NextAuth 
 - *Rôle* : Gère toutes les requêtes d'authentification automatiquement
 
-**📝 Étape 8 :** API d'inscription (`app/api/auth/signup/route.ts`)  
+** Étape 8 :** API d'inscription (`app/api/auth/signup/route.ts`)  
 - *C'est quoi* : API pour créer de nouveaux comptes utilisateur
 - *Inclus* : Validation, hachage de mot de passe, vérification email unique
 
-**🔌 Étape 9 :** SessionProvider (`components/providers/SessionProvider.tsx`)
+** Étape 9 :** SessionProvider (`components/providers/SessionProvider.tsx`)
 - *C'est quoi* : Permet à tous vos composants de "savoir" qui est connecté
 - *Magie* : Votre interface se met à jour automatiquement
 
-**🎨 Étape 10 :** Composants d'authentification
+** Étape 10 :** Composants d'authentification
 - `AuthButton.tsx` = boutons connexion/déconnexion intelligents  
 - `SignInForm.tsx` = formulaire de connexion avec OAuth
 - `Navigation.tsx` = navigation adaptative selon l'état de connexion
 
-## 📖 Suite du guide - Où continuer ?
+##  Suite du guide - Où continuer ?
 
 ### Pour avoir tous les codes complets immédiatement :
 **→ Consultez le fichier `03-CODES_COMPLETS.md`**
@@ -874,29 +874,29 @@ Les étapes 7 à 10 couvrent :
 - Solutions aux erreurs courantes
 - Diagnostic et résolution
 
-## 🎯 Récapitulatif de ce que vous avez appris
+##  Récapitulatif de ce que vous avez appris
 
-**✅ Étapes 1-5 : Fondations solides**
+** Étapes 1-5 : Fondations solides**
 1. **Git branching** - Travailler en sécurité sans casser l'existant
 2. **Installation packages** - Ajouter NextAuth et ses dépendances  
 3. **Variables d'environnement** - Configurer les secrets de façon sécurisée
 4. **Schéma Prisma** - Définir la structure de vos données d'authentification
 5. **Génération base de données** - Transformer le plan en vraie base de données
 
-**🔧 Concepts techniques maîtrisés**
+** Concepts techniques maîtrisés**
 - **Package management** avec npm
 - **Variables d'environnement** et sécurité
 - **Modélisation de données** avec Prisma
 - **Relations entre tables** (User ↔ Product ↔ Session)
 - **Types de données** (String, DateTime, Boolean, etc.)
 
-**🏗️ Architecture posée**
+** Architecture posée**
 - Base de données prête pour l'authentification
 - Structure de fichiers NextAuth configurée
 - Variables secrètes sécurisées
 - Client Prisma généré et opérationnel
 
-**🎓 Prêt pour la suite !**
+** Prêt pour la suite !**
 
 Vous avez maintenant des **fondations solides** ! La partie "configuration technique" est terminée. 
 
@@ -906,4 +906,4 @@ La suite (étapes 6-20) couvre la partie "interface utilisateur" :
 - Protection automatique des routes
 - Tests et validation
 
-**👉 Continuez avec le fichier `02-SUITE_GUIDE_NEXTAUTH.md` pour construire l'interface !**
+** Continuez avec le fichier `02-SUITE_GUIDE_NEXTAUTH.md` pour construire l'interface !**
