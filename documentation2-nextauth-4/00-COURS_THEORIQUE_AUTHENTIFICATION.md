@@ -2,9 +2,9 @@
 
 **Objectif de ce cours :** Comprendre les concepts fondamentaux de l'authentification et de l'autorisation dans le développement web moderne, et saisir pourquoi NextAuth.js a été créé pour résoudre des problèmes réels.
 
-**Public cible :** Étudiants débutants en développement web
-**Prérequis :** Notions de base du web (HTTP, cookies, sessions)
-**Durée estimée :** 45-60 minutes de lecture
+- **Public cible :** Étudiants débutants en développement web
+- **Prérequis :** Notions de base du web (HTTP, cookies, sessions)
+- **Durée estimée :** 45-60 minutes de lecture
 
 ## Introduction : Pourquoi la sécurité web est-elle cruciale ?
 
