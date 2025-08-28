@@ -1329,28 +1329,153 @@ Puis redémarrez le serveur. Cela affichera des logs très détaillés dans le t
 
 **Une fois le problème résolu, retirez `debug: true`** car cela affiche des informations sensibles.
 
-## Erreurs de session
+## Erreurs de session - Problèmes de gestion des sessions utilisateur
 
-### ❌ Erreur : "useSession must be used within SessionProvider"
+### Qu'est-ce qu'une erreur de session ?
+**Explication pour débutants :** Les erreurs de session surviennent quand votre application ne peut pas gérer correctement l'état de connexion de l'utilisateur. Cela peut être un problème de configuration du SessionProvider, de callbacks mal configurés, ou de problèmes dans la chaîne de transmission des informations de session.
 
-**Symptôme :**
+**Analogie :** C'est comme un système de badges d'accès dans un immeuble - si le lecteur de badge n'est pas branché (SessionProvider manquant) ou si le badge a été mal programmé (callbacks incorrects), l'utilisateur ne peut pas accéder aux zones protégées même s'il devrait y avoir droit.
+
+### ERREUR 13 : "useSession must be used within SessionProvider"
+
+**Symptôme complet que vous voyez :**
 ```
+Unhandled Runtime Error
 Error: useSession must be used within a SessionProvider
+
+Call Stack
+  useSession
+    node_modules/next-auth/react/index.js (158:0)
+  AuthButton
+    components/auth/AuthButton.tsx (8:23)
 ```
 
-**Cause :** Un composant utilise `useSession` sans être dans un `SessionProvider`.
+**Traduction simple :** "useSession ne peut pas être utilisé en dehors d'un SessionProvider"
 
-**Solution :**
-Vérifiez que votre `app/layout.tsx` wrappe bien les enfants :
+**Ce qui s'est passé techniquement :**
+1. Un de vos composants React utilise le hook `useSession` de NextAuth
+2. React cherche le contexte `SessionProvider` dans l'arbre des composants
+3. Il ne le trouve pas → erreur fatale
+4. L'application ne peut pas s'afficher
+
+**Pourquoi ça arrive ?**
+- Le `SessionProvider` n'a pas été ajouté dans le layout principal
+- Le `SessionProvider` ne wrappe pas correctement tous les composants
+- Vous utilisez `useSession` dans un composant qui n'est pas dans l'arbre React principal
+- Configuration incorrecte du SessionProvider
+
+**Analogie :** C'est comme essayer d'utiliser l'électricité dans une pièce qui n'est pas raccordée au tableau électrique général.
+
+**Solution détaillée :**
+
+**Étape 1 : Vérifier que le SessionProvider existe**
+```bash
+ls -la components/providers/SessionProvider.tsx
+```
+
+**Si ce fichier n'existe pas, créez-le :**
+
+Créez le fichier `components/providers/SessionProvider.tsx` avec ce contenu exact :
+
 ```typescript
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+'use client'
+
+import { SessionProvider } from 'next-auth/react'
+import { Session } from 'next-auth'
+
+interface AuthSessionProviderProps {
+  children: React.ReactNode
+  session: Session | null
+}
+
+export function AuthSessionProvider({ 
+  children, 
+  session 
+}: AuthSessionProviderProps) {
+  return (
+    <SessionProvider session={session}>
+      {children}
+    </SessionProvider>
+  )
+}
+```
+
+**Explication ligne par ligne :**
+
+```typescript
+'use client'
+```
+- Directive obligatoire pour Next.js App Router
+- Indique que ce composant s'exécute côté client (navigateur)
+- Nécessaire car les hooks React (`SessionProvider`) ne fonctionnent que côté client
+
+```typescript
+import { SessionProvider } from 'next-auth/react'
+```
+- Importe le vrai SessionProvider de NextAuth
+- Composant qui fournit le contexte de session à toute l'application
+
+```typescript
+interface AuthSessionProviderProps {
+  children: React.ReactNode
+  session: Session | null
+}
+```
+- Définit les props que notre wrapper accepte
+- `children` = tous les composants enfants
+- `session` = session actuelle (peut être null si pas connecté)
+
+```typescript
+export function AuthSessionProvider({ children, session }: AuthSessionProviderProps) {
+  return (
+    <SessionProvider session={session}>
+      {children}
+    </SessionProvider>
+  )
+}
+```
+- Notre wrapper personnalisé autour du SessionProvider officiel
+- Transmet la session et wrappe tous les enfants
+
+**Étape 2 : Vérifier la configuration dans app/layout.tsx**
+
+Ouvrez `app/layout.tsx` et vérifiez qu'il ressemble exactement à ça :
+
+```typescript
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+import { AuthSessionProvider } from '@/components/providers/SessionProvider'
+import { Navigation } from '@/components/Navigation'
+import { Footer } from '@/components/Footer'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+
+const inter = Inter({ subsets: ['latin'] })
+
+export const metadata: Metadata = {
+  title: 'Laboratoire 2 - NextAuth Demo',
+  description: 'Application Next.js avec authentification NextAuth v4',
+}
+
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const session = await getServerSession(authOptions)
 
   return (
     <html lang="fr">
-      <body>
+      <body className={inter.className}>
         <AuthSessionProvider session={session}>
-          {children} {/* ← Les enfants doivent être wrappés */}
+          <div className="min-h-screen flex flex-col">
+            <Navigation />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+          </div>
         </AuthSessionProvider>
       </body>
     </html>
@@ -1358,81 +1483,159 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 }
 ```
 
-### ❌ Erreur : "Session is null" quand elle devrait exister
+**Points critiques à vérifier :**
 
-**Symptôme :**
-L'utilisateur est connecté mais `session` est `null`.
-
-**Causes possibles :**
-
-1. **Problème de callback session :**
+**Point A : Import correct**
 ```typescript
-// Dans lib/auth.ts, vérifiez :
-callbacks: {
-  async session({ session, token }) {
-    if (session.user) {
-      session.user.id = token.sub!
-      session.user.role = token.role as string
-    }
-    return session
+import { AuthSessionProvider } from '@/components/providers/SessionProvider'
+```
+- Vérifiez que le chemin correspond à votre fichier
+- Pas d'erreur de frappe dans le nom
+
+**Point B : Récupération de session côté serveur**
+```typescript
+const session = await getServerSession(authOptions)
+```
+- `getServerSession` = fonction pour récupérer la session côté serveur
+- `authOptions` = votre configuration NextAuth importée de `lib/auth.ts`
+- Cette ligne doit être AVANT le return
+
+**Point C : Wrapper correct**
+```typescript
+<AuthSessionProvider session={session}>
+  {/* TOUT le contenu de votre app doit être ICI */}
+  <div className="min-h-screen flex flex-col">
+    <Navigation />
+    <main className="flex-1">
+      {children}
+    </main>
+    <Footer />
+  </div>
+</AuthSessionProvider>
+```
+- `{children}` représente toutes vos pages
+- Navigation et Footer doivent aussi être dans le SessionProvider s'ils utilisent `useSession`
+
+**Étape 3 : Tester la correction**
+```bash
+npm run dev
+```
+
+L'erreur "useSession must be used within SessionProvider" devrait avoir disparu.
+
+**Si l'erreur persiste :**
+
+**Test de diagnostic :** Ajoutez temporairement cette ligne dans un composant qui utilise `useSession` :
+
+```typescript
+import { useSession } from 'next-auth/react'
+
+export function MonComposant() {
+  console.log("SessionProvider détecté:", !!useSession) // Debug
+  const { data: session } = useSession()
+  // ...
+}
+```
+
+Si vous voyez `false` dans la console, le SessionProvider n'est toujours pas correctement configuré.
+
+### ERREUR 14 : "Session is null" quand elle devrait exister
+
+**Symptôme complet que vous voyez :**
+```
+// Dans la console du navigateur (F12)
+Session: null
+
+// Ou dans votre interface :
+// - Utilisateur semble connecté (URL montre qu'il vient de se connecter)
+// - Mais l'interface affiche "Connexion" au lieu du nom d'utilisateur
+// - useSession().data renvoie null
+```
+
+**Traduction simple :** "L'utilisateur devrait être connecté mais la session est vide"
+
+**Ce qui s'est passé techniquement :**
+1. L'utilisateur s'est authentifié avec succès (email/password ou OAuth)
+2. NextAuth a créé un token JWT
+3. Mais les callbacks de session ne transmettent pas correctement les informations
+4. Le hook `useSession` reçoit une session null ou incomplète
+
+**Causes courantes pour débutants :**
+- **Callbacks session mal configurés :** ne retournent pas les bonnes informations
+- **Callbacks JWT mal configurés :** ne passent pas les données utilisateur
+- **Types TypeScript incorrects :** interface Session ne correspond pas
+- **Problème de cookie :** session stockée mais pas accessible
+- **Timing :** composant s'affiche avant que la session soit chargée
+
+**Solution détaillée :**
+
+**Étape 1 : Vérifier les callbacks dans lib/auth.ts**
+
+Ouvrez `lib/auth.ts` et vérifiez la section `callbacks`. Elle doit ressembler exactement à ça :
+
+```typescript
+export const authOptions: NextAuthOptions = {
+  // ... autres configurations
+  callbacks: {
+    async jwt({ token, user }) {
+      // Appelé à chaque connexion ET à chaque vérification de session
+      if (user) {
+        // Première connexion : ajouter les infos utilisateur au token
+        token.role = user.role
+        token.id = user.id
+      }
+      return token
+    },
+
+    async session({ session, token }) {
+      // Appelé à chaque fois que la session est lue
+      if (token && session.user) {
+        // Transférer les infos du token vers la session
+        session.user.id = token.sub as string  // sub = user ID
+        session.user.role = token.role as string
+      }
+      return session
+    },
   },
 }
 ```
 
-2. **Problème de token JWT :**
+**Explication ligne par ligne des callbacks :**
+
+**Callback JWT :**
 ```typescript
-// Vérifiez aussi :
-callbacks: {
-  async jwt({ token, user }) {
-    if (user) {
-      token.role = user.role
-    }
-    return token
-  },
+async jwt({ token, user }) {
+  if (user) {
+    token.role = user.role
+    token.id = user.id
+  }
+  return token
 }
 ```
+- `jwt` est appelé à chaque connexion et vérification de session
+- `user` existe seulement lors de la première connexion
+- On enrichit le `token` avec les informations personnalisées
+- Le token est stocké de façon cryptée dans un cookie
 
-## Erreurs de middleware
-
-### ❌ Erreur : "Middleware not working"
-
-**Symptôme :**
-Les routes protégées ne redirigent pas vers la connexion.
-
-**Causes possibles :**
-
-1. **Fichier mal placé :**
-Le fichier `middleware.ts` doit être à la RACINE du projet, pas dans un sous-dossier.
-
-2. **Configuration matcher incorrecte :**
+**Callback Session :**
 ```typescript
-export const config = {
-  matcher: [
-    "/products/new",      // ← Chemins exacts
-    "/products/:id/edit", // ← Pas de regex ici
-    "/admin/:path*"
-  ]
+async session({ session, token }) {
+  if (token && session.user) {
+    session.user.id = token.sub as string
+    session.user.role = token.role as string
+  }
+  return session
 }
 ```
+- `session` est appelé chaque fois qu'un composant utilise `useSession`
+- On transfert les infos du `token` vers l'objet `session`
+- `token.sub` = ID utilisateur (fourni automatiquement par NextAuth)
+- C'est cet objet `session` que reçoivent vos composants React
 
-3. **Import withAuth incorrect :**
-```typescript
-import { withAuth } from "next-auth/middleware" // ← Bon import
-```
+**Étape 2 : Vérifier les extensions de types TypeScript**
 
-## Erreurs de types TypeScript
+Dans le même fichier `lib/auth.ts`, vérifiez que vous avez ces déclarations de types :
 
-### ❌ Erreur : "Property 'role' does not exist on type 'User'"
-
-**Symptôme :**
-```
-Property 'role' does not exist on type 'User'
-```
-
-**Cause :** Les extensions de types NextAuth ne sont pas correctes.
-
-**Solution :**
-Vérifiez que `lib/auth.ts` contient bien :
 ```typescript
 declare module "next-auth" {
   interface Session {
@@ -1441,85 +1644,792 @@ declare module "next-auth" {
       name?: string | null
       email?: string | null
       image?: string | null
-      role?: string | null  // ← Cette ligne
+      role?: string | null
     }
   }
 
   interface User {
-    role?: string | null    // ← Cette ligne
+    role?: string | null
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    role?: string | null
   }
 }
 ```
 
-## Diagnostic général
+**Pourquoi ces types sont nécessaires :**
+- TypeScript a besoin de savoir que `session.user` a une propriété `role`
+- Sans ça, `token.role` et `session.user.role` génèrent des erreurs TypeScript
+- Ces déclarations étendent les types de base de NextAuth
 
-### Commandes de diagnostic utiles
+**Étape 3 : Test de diagnostic avec logs détaillés**
 
-```bash
-# Vérifier l'état des packages
-npm list next-auth @next-auth/prisma-adapter bcryptjs
+Ajoutez temporairement des `console.log` dans vos callbacks pour débugger :
 
-# Vérifier la configuration Prisma
-npx prisma validate
+```typescript
+callbacks: {
+  async jwt({ token, user }) {
+    console.log("🔑 JWT Callback - user:", user ? "EXISTS" : "NULL")
+    console.log("🔑 JWT Callback - token avant:", token)
+    
+    if (user) {
+      token.role = user.role
+      token.id = user.id
+      console.log("🔑 JWT Callback - token enrichi:", token)
+    }
+    return token
+  },
 
-# Vérifier la base de données
-npx prisma studio
-
-# Vérifier les variables d'environnement
-echo $NEXTAUTH_URL     # Unix/Mac
-echo $NEXTAUTH_SECRET  # Unix/Mac
-# Ou simplement ouvrir le fichier .env
-
-# Nettoyer et réinstaller
-rm -rf node_modules package-lock.json
-npm install
+  async session({ session, token }) {
+    console.log("📋 Session Callback - token:", token)
+    console.log("📋 Session Callback - session avant:", session)
+    
+    if (token && session.user) {
+      session.user.id = token.sub as string
+      session.user.role = token.role as string
+      console.log("📋 Session Callback - session enrichie:", session)
+    }
+    return session
+  },
+},
 ```
 
-### Logs utiles à activer
+**Étape 4 : Tester et analyser les logs**
 
-Dans `lib/auth.ts`, activez le debug :
+1. Connectez-vous sur votre application
+2. Regardez les logs dans le terminal ET dans la console du navigateur (F12)
+3. Vérifiez que :
+   - JWT callback s'exécute avec `user: EXISTS` à la connexion
+   - Session callback s'exécute et enrichit la session
+   - `useSession` dans vos composants reçoit les bonnes données
+
+**Étape 5 : Test dans un composant**
+
+Créez un composant de test temporaire pour diagnostiquer :
+
 ```typescript
-export const authOptions: NextAuthOptions = {
-  // ... autres configurations
-  debug: true, // ← Activez ceci en développement
+'use client'
+
+import { useSession } from 'next-auth/react'
+
+export function SessionDebug() {
+  const { data: session, status } = useSession()
+  
+  return (
+    <div className="p-4 bg-gray-100 m-4">
+      <h3>Session Debug</h3>
+      <p>Status: {status}</p>
+      <pre>{JSON.stringify(session, null, 2)}</pre>
+    </div>
+  )
 }
 ```
 
-Cela affichera des logs détaillés dans la console pour diagnostiquer les problèmes.
+Ajoutez ce composant temporairement dans une page pour voir exactement ce que contient votre session.
 
-## Problèmes de port
+**Étape 6 : Nettoyer les logs**
+Une fois le problème identifié et résolu, retirez tous les `console.log` et le composant de debug.
 
-### ❌ Port 3000 occupé
+## Erreurs de middleware - Problèmes de protection des routes
 
-**Symptôme :**
+### Qu'est-ce qu'une erreur de middleware ?
+**Explication pour débutants :** Les erreurs de middleware surviennent quand le système de protection de routes de Next.js ne fonctionne pas correctement. Le middleware est censé intercepter les requêtes avant qu'elles arrivent à vos pages et vérifier si l'utilisateur a le droit d'accéder à cette route.
+
+**Analogie :** Le middleware est comme un vigile à l'entrée d'un bâtiment - si le vigile n'est pas à son poste (middleware mal placé) ou s'il n'a pas reçu ses instructions (configuration incorrecte), n'importe qui peut rentrer dans les zones sécurisées.
+
+### ERREUR 15 : "Middleware not working" - Protection des routes ne fonctionne pas
+
+**Symptôme complet que vous observez :**
 ```
-Port 3000 is in use, trying 3001 instead
+// Test : aller sur http://localhost:3000/products/new en étant déconnecté
+// Résultat attendu : redirection vers /auth/signin
+// Résultat obtenu : accès direct à la page (PAS de redirection)
+
+// Ou :
+// - Vous pouvez accéder aux routes admin sans être admin
+// - Les APIs protégées répondent même sans authentification
+// - Aucune redirection automatique vers la page de connexion
 ```
 
-**Solution :**
-Mettez à jour votre `.env` :
+**Traduction simple :** "Le système de protection des routes ne fonctionne pas"
+
+**Ce qui devrait se passer techniquement :**
+1. Vous tapez `/products/new` dans l'URL
+2. Le middleware Next.js intercepte cette requête AVANT qu'elle arrive à la page
+3. Il vérifie si vous êtes connecté via NextAuth
+4. Si pas connecté → redirection automatique vers `/auth/signin`
+5. Si connecté → accès autorisé à la page
+
+**Causes courantes pour débutants :**
+- **Fichier middleware au mauvais endroit :** dans `app/` au lieu de la racine
+- **Configuration matcher incorrecte :** syntaxe de chemins incorrecte
+- **Import NextAuth middleware incorrect :** mauvaise fonction importée
+- **Middleware pas exporté correctement :** problème d'export
+- **Conflit avec d'autres middlewares :** plusieurs middlewares qui interfèrent
+
+**Solution détaillée :**
+
+**Étape 1 : Vérifier l'emplacement du fichier middleware**
+
+Le fichier `middleware.ts` DOIT être à la racine de votre projet, au même niveau que `package.json`.
+
+```bash
+ls -la middleware.ts
+```
+
+**Structure correcte :**
+```
+votre-projet/
+├── app/
+├── components/
+├── lib/
+├── prisma/
+├── middleware.ts      ← ICI (racine)
+├── package.json
+└── ...
+```
+
+**Structure INCORRECTE :**
+```
+votre-projet/
+├── app/
+│   └── middleware.ts  ← MAUVAIS ENDROIT
+├── lib/
+│   └── middleware.ts  ← MAUVAIS ENDROIT
+└── ...
+```
+
+**Si le fichier n'existe pas ou est mal placé :**
+
+Créez le fichier `middleware.ts` à la racine avec ce contenu exact :
+
+```typescript
+import { withAuth } from "next-auth/middleware"
+
+export default withAuth(
+  function middleware(req) {
+    // Cette fonction s'exécute pour chaque requête protégée
+    console.log("🛡️ Middleware - Vérification de:", req.url)
+    console.log("🛡️ Token présent:", !!req.nextauth.token)
+    
+    // Vérification des rôles admin (optionnel)
+    if (req.nextUrl.pathname.startsWith("/admin")) {
+      const isAdmin = req.nextauth.token?.role === "admin"
+      console.log("🛡️ Accès admin requis - Utilisateur admin:", isAdmin)
+      
+      if (!isAdmin) {
+        // Rediriger vers l'accueil si pas admin
+        return Response.redirect(new URL("/", req.url))
+      }
+    }
+  },
+  {
+    callbacks: {
+      authorized: ({ token }) => {
+        // Cette fonction détermine si l'utilisateur est autorisé
+        console.log("🛡️ Callback authorized - Token:", !!token)
+        return !!token // true si token existe (utilisateur connecté)
+      },
+    },
+  }
+)
+
+export const config = {
+  matcher: [
+    // Pages protégées (nécessitent une connexion)
+    "/products/new",
+    "/products/:path*/edit",
+    "/admin/:path*",
+    
+    // APIs protégées (nécessitent une connexion)
+    "/api/products/:path*",
+    "/api/admin/:path*"
+  ]
+}
+```
+
+**Explication ligne par ligne :**
+
+**Import et export :**
+```typescript
+import { withAuth } from "next-auth/middleware"
+export default withAuth(...)
+```
+- `withAuth` = fonction de NextAuth qui crée un middleware d'authentification
+- `export default` = exporte ce middleware comme middleware principal du projet
+
+**Fonction middleware personnalisée :**
+```typescript
+function middleware(req) {
+  console.log("🛡️ Middleware - Vérification de:", req.url)
+  // ...
+}
+```
+- Cette fonction s'exécute pour chaque requête vers une route protégée
+- `req` = objet de la requête avec toutes les informations (URL, headers, token, etc.)
+- Vous pouvez ajouter votre logique personnalisée ici
+
+**Vérification des rôles :**
+```typescript
+if (req.nextUrl.pathname.startsWith("/admin")) {
+  const isAdmin = req.nextauth.token?.role === "admin"
+  if (!isAdmin) {
+    return Response.redirect(new URL("/", req.url))
+  }
+}
+```
+- Vérifie si l'URL commence par `/admin`
+- Contrôle que l'utilisateur a le rôle "admin"
+- Redirige vers l'accueil si pas autorisé
+
+**Callback authorized :**
+```typescript
+callbacks: {
+  authorized: ({ token }) => !!token
+}
+```
+- Fonction qui détermine si l'accès est autorisé
+- `!!token` = true si token existe (utilisateur connecté), false sinon
+- Si return false → redirection automatique vers `/auth/signin`
+
+**Configuration matcher :**
+```typescript
+export const config = {
+  matcher: [
+    "/products/new",
+    "/products/:path*/edit", 
+    "/api/products/:path*"
+  ]
+}
+```
+- Liste des chemins où le middleware doit s'appliquer
+- `:path*` = wildcard pour capturer plusieurs segments d'URL
+- Syntaxe Next.js, pas regex classique
+
+**Étape 2 : Vérifier la configuration matcher**
+
+**Syntaxes correctes pour matcher :**
+
+```typescript
+// Chemins exacts
+"/products/new"           → protège uniquement /products/new
+
+// Wildcards simples  
+"/products/:id"           → protège /products/123, /products/abc, etc.
+"/products/:id/edit"      → protège /products/123/edit, /products/abc/edit
+
+// Wildcards multiples
+"/admin/:path*"           → protège /admin/users, /admin/settings/general
+"/api/products/:path*"    → protège /api/products/123, /api/products/create
+
+// APIs spécifiques
+"/api/products"           → protège uniquement /api/products (pas les sous-routes)
+```
+
+**Syntaxes INCORRECTES (ne fonctionnent pas) :**
+```typescript
+// Regex non supportée
+"/products/*/edit"        // INCORRECT
+"/products/.*/edit"       // INCORRECT
+
+// Globs non supportés
+"/admin/**"               // INCORRECT
+
+// Extensions de fichiers
+"*.api"                   // INCORRECT
+```
+
+**Étape 3 : Tester le middleware**
+
+**Test 1 : Vérification des logs**
+```bash
+npm run dev
+```
+
+Allez sur une route protégée en étant déconnecté. Vous devriez voir dans le terminal :
+```
+🛡️ Middleware - Vérification de: http://localhost:3000/products/new
+🛡️ Token présent: false
+🛡️ Callback authorized - Token: false
+```
+
+**Test 2 : Vérification des redirections**
+- Déconnectez-vous complètement
+- Allez sur `http://localhost:3000/products/new`
+- **Résultat attendu :** Redirection automatique vers `/auth/signin?callbackUrl=%2Fproducts%2Fnew`
+
+**Test 3 : Vérification après connexion**
+- Connectez-vous
+- Allez sur `http://localhost:3000/products/new`  
+- **Résultat attendu :** Accès autorisé, pas de redirection
+
+**Étape 4 : Problèmes courants et solutions**
+
+**Problème A : "Cannot read property 'pathname' of undefined"**
+```typescript
+// INCORRECT :
+if (req.url.startsWith("/admin"))
+
+// CORRECT :
+if (req.nextUrl.pathname.startsWith("/admin"))
+```
+
+**Problème B : Middleware s'applique partout**
+Vérifiez que votre `config.matcher` est bien défini et limité aux bonnes routes.
+
+**Problème C : Boucles de redirection infinies**
+```typescript
+// Assurez-vous de ne PAS protéger les routes d'authentification
+export const config = {
+  matcher: [
+    "/products/:path*",
+    // Ne PAS inclure :
+    // "/auth/:path*",     // INCORRECT - créerait une boucle
+    // "/api/auth/:path*", // INCORRECT - empêcherait la connexion
+  ]
+}
+```
+
+**Étape 5 : Retirer les logs de debug**
+Une fois que le middleware fonctionne, retirez les `console.log` pour la production :
+
+```typescript
+export default withAuth(
+  function middleware(req) {
+    // Gardez seulement la logique métier, pas les logs
+    if (req.nextUrl.pathname.startsWith("/admin")) {
+      const isAdmin = req.nextauth.token?.role === "admin"
+      if (!isAdmin) {
+        return Response.redirect(new URL("/", req.url))
+      }
+    }
+  },
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token,
+    },
+  }
+)
+```
+
+## Erreurs de types TypeScript - Problèmes de typage avec NextAuth
+
+### Qu'est-ce qu'une erreur de types TypeScript ?
+**Explication pour débutants :** TypeScript vérifie que votre code utilise correctement les types de données. Quand vous étendez NextAuth avec des champs personnalisés (comme `role`), vous devez informer TypeScript de ces nouveaux champs, sinon il génère des erreurs.
+
+**Analogie :** C'est comme remplir un formulaire officiel - si vous ajoutez une case "Profession" qui n'était pas prévue sur le formulaire original, vous devez officiellement déclarer que cette case existe maintenant.
+
+### ERREUR 16 : "Property 'role' does not exist on type 'User'"
+
+**Symptôme complet que vous voyez :**
+```
+TypeScript Error in lib/auth.ts (67:18):
+Property 'role' does not exist on type 'User'.
+
+    65 |     if (user) {
+    66 |       token.role = user.role  ← Erreur ici
+    67 |       token.id = user.id
+    68 |     }
+```
+
+**Ou aussi :**
+```
+TypeScript Error:
+Property 'role' does not exist on type '{ name?: string | null; email?: string | null; image?: string | null; }'
+
+Cannot access session.user.role in component AuthButton.tsx
+```
+
+**Traduction simple :** "TypeScript ne connaît pas la propriété 'role' sur l'objet User"
+
+**Ce qui s'est passé techniquement :**
+1. Vous utilisez `user.role` ou `session.user.role` dans votre code
+2. TypeScript vérifie les types de NextAuth par défaut
+3. Les types par défaut ne contiennent pas de champ `role`
+4. TypeScript refuse de compiler car il ne reconnaît pas cette propriété
+
+**Pourquoi ça arrive ?**
+- Vous avez ajouté des champs personnalisés (role, permissions, etc.) à NextAuth
+- Mais vous n'avez pas déclaré ces nouveaux types à TypeScript
+- TypeScript utilise toujours les types de base de NextAuth
+
+**Solution détaillée :**
+
+**Étape 1 : Ajouter les déclarations de types dans lib/auth.ts**
+
+À la fin de votre fichier `lib/auth.ts`, ajoutez exactement ces déclarations :
+
+```typescript
+// Extensions de types pour NextAuth - OBLIGATOIRE
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string                    // ← ID utilisateur (toujours nécessaire)
+      name?: string | null          // ← Nom affiché
+      email?: string | null         // ← Adresse email
+      image?: string | null         // ← Photo de profil (OAuth)
+      role?: string | null          // ← Rôle personnalisé (user/admin)
+    }
+  }
+
+  interface User {
+    id: string                      // ← ID utilisateur dans la base
+    role?: string | null            // ← Rôle personnalisé
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    role?: string | null            // ← Rôle dans le token JWT
+  }
+}
+```
+
+**Explication ligne par ligne :**
+
+**Extension Session :**
+```typescript
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string
+      role?: string | null
+    }
+  }
+}
+```
+- `declare module` = dit à TypeScript "je vais étendre ce module existant"
+- `interface Session` = étend l'interface Session existante de NextAuth
+- Ajoute les champs personnalisés que vous utilisez dans vos composants React
+
+**Extension User :**
+```typescript
+interface User {
+  id: string
+  role?: string | null
+}
+```
+- Étend l'interface User utilisée dans les callbacks
+- Nécessaire pour `user.role` dans le callback JWT
+
+**Extension JWT :**
+```typescript
+declare module "next-auth/jwt" {
+  interface JWT {
+    role?: string | null
+  }
+}
+```
+- Étend l'interface JWT pour le token
+- Nécessaire pour `token.role` dans les callbacks
+
+**Types de données expliqués :**
+- `string` = texte obligatoire
+- `string?` = texte optionnel
+- `string | null` = texte ou null
+- `string? | null` = texte optionnel qui peut aussi être null
+
+**Étape 2 : Vérifier que vos callbacks utilisent les bons types**
+
+Dans le même fichier, vérifiez que vos callbacks correspondent aux types déclarés :
+
+```typescript
+callbacks: {
+  async jwt({ token, user }) {
+    if (user) {
+      token.role = user.role  // ← Plus d'erreur TypeScript
+      token.id = user.id
+    }
+    return token
+  },
+
+  async session({ session, token }) {
+    if (token && session.user) {
+      session.user.id = token.sub as string
+      session.user.role = token.role  // ← Plus d'erreur TypeScript
+    }
+    return session
+  },
+},
+```
+
+**Étape 3 : Vérifier l'utilisation dans vos composants**
+
+Dans vos composants React, vous pouvez maintenant utiliser sans erreur :
+
+```typescript
+'use client'
+
+import { useSession } from 'next-auth/react'
+
+export function AuthButton() {
+  const { data: session } = useSession()
+
+  if (!session) {
+    return <button>Connexion</button>
+  }
+
+  return (
+    <div>
+      <p>Bonjour, {session.user.name}</p>
+      <p>Rôle : {session.user.role}</p>  {/* ← Plus d'erreur TypeScript */}
+    </div>
+  )
+}
+```
+
+**Étape 4 : Redémarrer TypeScript**
+
+Après avoir ajouté les déclarations de types :
+
+```bash
+# Arrêtez le serveur de développement (Ctrl+C)
+npm run dev
+```
+
+**Dans VS Code :** Vous pouvez aussi redémarrer le serveur TypeScript :
+- Ouvrez la palette de commandes (Ctrl+Shift+P)
+- Tapez "TypeScript: Restart TS Server"
+- Appuyez sur Entrée
+
+**Étape 5 : Vérification que tout fonctionne**
+
+**Test 1 : Plus d'erreurs TypeScript**
+Votre éditeur ne devrait plus souligner `user.role` ou `session.user.role` en rouge.
+
+**Test 2 : Autocomplétion améliorée**
+Quand vous tapez `session.user.`, vous devriez voir `role` dans la liste d'autocomplétion.
+
+**Erreurs connexes possibles :**
+
+**Si vous obtenez "Cannot redeclare block-scoped variable" :**
+- Vous avez déclaré les types plusieurs fois
+- Supprimez les déclarations en double, gardez seulement celles dans `lib/auth.ts`
+
+**Si vous obtenez des erreurs sur d'autres propriétés :**
+Ajoutez-les à vos déclarations de types :
+```typescript
+interface User {
+  id: string
+  role?: string | null
+  permissions?: string[]     // ← Ajoutez vos champs personnalisés
+  department?: string | null
+}
+```
+
+## Diagnostic général - Outils et commandes pour résoudre tous les problèmes
+
+### Guide de diagnostic méthodique
+
+**Quand utiliser cette section :**
+- Vous avez une erreur qui ne figure pas dans les sections précédentes
+- Vous voulez faire un diagnostic complet de votre installation
+- Votre application ne fonctionne pas du tout
+- Vous voulez partir sur de bonnes bases
+
+**Analogie :** C'est comme faire une révision complète de votre voiture - on vérifie tous les systèmes un par un pour s'assurer que tout fonctionne.
+
+### Étape 1 : Vérification de l'environnement de développement
+
+**Commandes de base :**
+```bash
+# Vérifier les versions des outils principaux
+node --version          # Doit être 18+ pour Next.js 14
+npm --version           # Doit être 9+
+```
+
+**Résultats attendus :**
+```
+node --version  → v18.17.0 ou plus récent
+npm --version   → 9.8.1 ou plus récent
+```
+
+**Si versions trop anciennes :** Mettez à jour Node.js depuis https://nodejs.org
+
+### Étape 2 : Vérification des packages NextAuth
+
+**Commandes détaillées :**
+```bash
+# Vérifier les packages NextAuth installés
+npm list next-auth @next-auth/prisma-adapter bcryptjs
+
+# Vérifier TOUS les packages (plus verbeux)
+npm list --depth=0
+```
+
+**Résultats attendus :**
+```
+├── next-auth@4.24.7
+├── @next-auth/prisma-adapter@1.0.7  
+├── bcryptjs@2.4.3
+└── @types/bcryptjs@2.4.6
+```
+
+**Commandes de réparation si problèmes :**
+```bash
+# Désinstaller les mauvaises versions
+npm uninstall @auth/prisma-adapter next-auth
+
+# Réinstaller les bonnes versions
+npm install next-auth@4 @next-auth/prisma-adapter bcryptjs @types/bcryptjs
+```
+
+### Étape 3 : Vérification de la configuration Prisma
+
+**Validation du schéma :**
+```bash
+npx prisma validate
+```
+
+**Résultat attendu :**
+```
+The schema is valid.
+```
+
+**Si erreurs :** Corrigez les erreurs indiquées avant de continuer.
+
+**Vérification de la base de données :**
+```bash
+# Tester la connexion à la base de données
+npx prisma db execute --stdin
+```
+
+Puis tapez une requête simple :
+```sql
+SELECT 1;
+```
+Et pressez Ctrl+D (Unix/Mac) ou Ctrl+Z puis Entrée (Windows).
+
+**Si connexion OK :** Vous verrez le résultat de la requête.
+**Si connexion échoue :** Vérifiez votre `DATABASE_URL` dans `.env`.
+
+**Visualisation de la base :**
+```bash
+npx prisma studio
+```
+
+Vérifiez que vous voyez bien toutes les tables : `users`, `accounts`, `sessions`, `verificationtokens`.
+
+### Étape 4 : Vérification des variables d'environnement
+
+**Sur Unix/Mac :**
+```bash
+echo $DATABASE_URL
+echo $NEXTAUTH_URL  
+echo $NEXTAUTH_SECRET
+```
+
+**Sur Windows :**
+```bash
+# Ou simplement ouvrir le fichier .env
+Get-Content .env
+```
+
+**Variables minimales obligatoires :**
 ```env
-NEXTAUTH_URL="http://localhost:3001"
+DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="cle-secrete-minimum-32-caracteres"
 ```
 
-Et si vous avez configuré OAuth, mettez à jour les URLs de callback :
-- `http://localhost:3001/api/auth/callback/google`
-- `http://localhost:3001/api/auth/callback/github`
+### Étape 5 : Nettoyage complet (solution radicale)
 
-## Aide supplémentaire
+**Si rien ne fonctionne, nettoyage total :**
 
-Si vous rencontrez une erreur qui ne figure pas dans ce guide :
+```bash
+# 1. Arrêter le serveur (Ctrl+C)
 
-1. **Copiez l'erreur complète** depuis la console
-2. **Vérifiez les logs** dans le terminal où tourne `npm run dev`
-3. **Suivez exactement** l'ordre des étapes dans le guide principal
-4. **Comparez votre code** avec les exemples complets du fichier `03-CODES_COMPLETS.md`
+# 2. Supprimer tous les fichiers de cache et dépendances
+rm -rf node_modules package-lock.json
+# Sur Windows : rmdir /s node_modules et supprimez package-lock.json
 
-La plupart des erreurs viennent de :
-- ✅ Packages mal installés
-- ✅ Variables d'environnement manquantes
-- ✅ Base de données non mise à jour
-- ✅ Fichiers dans les mauvais emplacements
-- ✅ Fautes de frappe dans le code
+# 3. Nettoyer le cache npm
+npm cache clean --force
 
-Prenez le temps de vérifier chaque point méthodiquement.
+# 4. Réinstaller complètement
+npm install
+
+# 5. Regénérer Prisma
+npx prisma generate
+npx prisma db push
+
+# 6. Relancer le serveur
+npm run dev
+```
+
+### Étape 6 : Diagnostic en mode debug complet
+
+**Activez tous les logs de debug :**
+
+Dans `lib/auth.ts` :
+```typescript
+export const authOptions: NextAuthOptions = {
+  debug: true,  // ← Logs détaillés NextAuth
+  // ... rest of config
+}
+```
+
+Dans `middleware.ts` (si existant) :
+```typescript
+export default withAuth(
+  function middleware(req) {
+    console.log("🛡️ Middleware:", req.nextUrl.pathname)
+    console.log("🛡️ Token:", !!req.nextauth.token)
+    // ... rest of middleware
+  }
+)
+```
+
+**Redémarrez et testez :** Vous aurez des logs très détaillés pour identifier exactement où ça bloque.
+
+### Étape 7 : Tests de fonctionnalités par ordre de priorité
+
+**Test 1 : Serveur démarre**
+```bash
+npm run dev
+```
+**Attendu :** "Ready in X.Xs" sans erreurs.
+
+**Test 2 : APIs NextAuth accessibles**
+Allez sur `http://localhost:3000/api/auth/providers`
+**Attendu :** JSON avec la liste des providers.
+
+**Test 3 : Pages d'authentification**
+- `http://localhost:3000/auth/signin` → page de connexion
+- `http://localhost:3000/auth/signup` → page d'inscription
+
+**Test 4 : Inscription**
+Créez un compte test, vérifiez dans Prisma Studio qu'il apparaît.
+
+**Test 5 : Connexion**
+Connectez-vous avec le compte créé.
+
+**Test 6 : Protection des routes**
+Accédez à une route protégée déconnecté → redirection vers signin.
+
+### Commandes de maintenance régulière
+
+**Vérification mensuelle :**
+```bash
+# Vérifier les updates de packages
+npm outdated
+
+# Valider Prisma
+npx prisma validate
+
+# Nettoyer les logs
+# (supprimer console.log temporaires du code)
+```
+
+**En cas de problème récurrent :**
+```bash
+# Reset complet de la base de données (ATTENTION : supprime toutes les données)
+npx prisma db push --force-reset
+
+# Puis recréer un utilisateur de test
+```
+
+Cette approche méthodique vous permettra d'identifier et de résoudre 99% des problèmes NextAuth que vous pouvez rencontrer.
