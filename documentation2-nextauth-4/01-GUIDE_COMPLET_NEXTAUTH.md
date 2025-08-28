@@ -697,20 +697,20 @@ You can now start using Prisma Client in your code. Reference: https://pris.ly/d
 npx prisma db push
 ```
 
-** Cette commande fait quoi exactement ?**
+**Cette commande fait quoi exactement ?**
 - **Compare** votre schéma avec la base de données actuelle
 - **Détecte les différences** (nouvelles tables, nouveaux champs)
 - **Modifie la vraie base de données** pour qu'elle corresponde au schéma
 - **Préserve les données existantes** (vos produits actuels ne seront pas supprimés)
 
-** Concrètement, cette commande va créer :**
+**Concrètement, cette commande va créer :**
 -  Table `users` (utilisateurs)
 -  Table `accounts` (comptes externes Google/GitHub)
 -  Table `sessions` (sessions actives)
 -  Table `verificationtokens` (tokens de vérification)
 -  Modifier la table `products` (ajouter les champs `createdBy` et `createdById`)
 
-** Résultat attendu :**
+**Résultat attendu :**
 ```
 Environment variables loaded from .env
 Prisma schema loaded from prisma\schema.prisma
@@ -721,7 +721,7 @@ Datasource "db": PostgreSQL database "your-db", schema "public" at "your-host:54
 ✔ Generated Prisma Client (4.16.2 | library) to ./node_modules/.prisma/client in 345ms
 ```
 
-** Décodage du message :**
+**Décodage du message :**
 - `"Your database is now in sync"` =  Parfait, les tables sont créées
 - `"Generated Prisma Client"` =  Le code TypeScript est à jour aussi
 
@@ -734,7 +734,7 @@ Vous pourriez voir ces avertissements (c'est normal) :
   • You are about to create a unique constraint on the columns (email) on the users table...
 ```
 
-** Faut-il s'inquiéter ?**
+**Faut-il s'inquiéter ?**
 - **NON** si c'est la première fois que vous ajoutez l'authentification
 - **OUI** si vous avez déjà des utilisateurs avec des emails dupliqués
 
@@ -821,7 +821,7 @@ Les fondations sont posées, on peut maintenant construire le système d'authent
 
 Le fichier `lib/auth.ts` est assez complexe avec beaucoup d'options. Pour ne pas surcharger ce guide d'introduction, **tous les codes complets avec commentaires détaillés** sont disponibles dans le fichier `03-CODES_COMPLETS.md`.
 
-** Ce que contient la configuration NextAuth :**
+**Ce que contient la configuration NextAuth :**
 
 1. **Extensions TypeScript** → Ajouter le champ "role" aux sessions
 2. **PrismaAdapter** → Connecter NextAuth à votre base de données  
@@ -838,19 +838,19 @@ Le fichier `lib/auth.ts` est assez complexe avec beaucoup d'options. Pour ne pas
 
 Les étapes 7 à 10 couvrent :
 
-** Étape 7 :** Routes d'authentification (`app/api/auth/[...nextauth]/route.ts`)
+**Étape 7 :** Routes d'authentification (`app/api/auth/[...nextauth]/route.ts`)
 - *C'est quoi* : Le "central téléphonique" de NextAuth 
 - *Rôle* : Gère toutes les requêtes d'authentification automatiquement
 
-** Étape 8 :** API d'inscription (`app/api/auth/signup/route.ts`)  
+**Étape 8 :** API d'inscription (`app/api/auth/signup/route.ts`)  
 - *C'est quoi* : API pour créer de nouveaux comptes utilisateur
 - *Inclus* : Validation, hachage de mot de passe, vérification email unique
 
-** Étape 9 :** SessionProvider (`components/providers/SessionProvider.tsx`)
+**Étape 9 :** SessionProvider (`components/providers/SessionProvider.tsx`)
 - *C'est quoi* : Permet à tous vos composants de "savoir" qui est connecté
 - *Magie* : Votre interface se met à jour automatiquement
 
-** Étape 10 :** Composants d'authentification
+**Étape 10 :** Composants d'authentification
 - `AuthButton.tsx` = boutons connexion/déconnexion intelligents  
 - `SignInForm.tsx` = formulaire de connexion avec OAuth
 - `Navigation.tsx` = navigation adaptative selon l'état de connexion
@@ -876,27 +876,27 @@ Les étapes 7 à 10 couvrent :
 
 ##  Récapitulatif de ce que vous avez appris
 
-** Étapes 1-5 : Fondations solides**
+**Étapes 1-5 : Fondations solides**
 1. **Git branching** - Travailler en sécurité sans casser l'existant
 2. **Installation packages** - Ajouter NextAuth et ses dépendances  
 3. **Variables d'environnement** - Configurer les secrets de façon sécurisée
 4. **Schéma Prisma** - Définir la structure de vos données d'authentification
 5. **Génération base de données** - Transformer le plan en vraie base de données
 
-** Concepts techniques maîtrisés**
+**Concepts techniques maîtrisés**
 - **Package management** avec npm
 - **Variables d'environnement** et sécurité
 - **Modélisation de données** avec Prisma
 - **Relations entre tables** (User ↔ Product ↔ Session)
 - **Types de données** (String, DateTime, Boolean, etc.)
 
-** Architecture posée**
+**Architecture posée**
 - Base de données prête pour l'authentification
 - Structure de fichiers NextAuth configurée
 - Variables secrètes sécurisées
 - Client Prisma généré et opérationnel
 
-** Prêt pour la suite !**
+**Prêt pour la suite !**
 
 Vous avez maintenant des **fondations solides** ! La partie "configuration technique" est terminée. 
 
@@ -906,4 +906,4 @@ La suite (étapes 6-20) couvre la partie "interface utilisateur" :
 - Protection automatique des routes
 - Tests et validation
 
-** Continuez avec le fichier `02-SUITE_GUIDE_NEXTAUTH.md` pour construire l'interface !**
+**Continuez avec le fichier `02-SUITE_GUIDE_NEXTAUTH.md` pour construire l'interface !**
