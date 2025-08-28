@@ -1293,12 +1293,12 @@ export async function GET() {
 ### Section 4 : Architecture et cas pratiques (25 points)
 
 **Question 4.1 (8 points)**
-Concevez l'architecture d'autorisation pour une plateforme e-learning avec les rôles suivants : Étudiant, Professeur, Administrateur. Définissez les permissions de chaque rôle.
+Concevez l'architecture d'autorisation pour une application de gestion de projets avec les rôles suivants : Développeur, Chef de projet, Administrateur système. Définissez les permissions de chaque rôle.
 
 **Réponse attendue :**
-- Étudiant : voir cours assignés, soumettre devoirs, voir notes
-- Professeur : créer/modifier cours, noter étudiants, voir statistiques
-- Administrateur : gérer utilisateurs, accès complet, paramètres système
+- Développeur : voir projets assignés, modifier tâches assignées, commenter
+- Chef de projet : créer/modifier projets, assigner tâches, voir rapports équipe
+- Administrateur système : gérer utilisateurs, accès complet, configuration globale
 
 **Question 4.2 (8 points)**
 Dans quels cas NE recommanderiez-vous PAS NextAuth.js ? Proposez des alternatives.
