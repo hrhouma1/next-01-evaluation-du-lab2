@@ -1,60 +1,205 @@
-# Guide de dépannage NextAuth.js v4 - Solutions aux erreurs courantes
+# Guide exhaustif de dépannage NextAuth.js v4 - Solutions détaillées pour étudiants débutants
 
-Ce guide résout les erreurs les plus fréquentes rencontrées lors de l'implémentation NextAuth.js v4.
+Ce guide vous accompagne **étape par étape** pour résoudre **toutes les erreurs courantes** que vous pouvez rencontrer lors de l'implémentation NextAuth.js v4. Chaque erreur est expliquée en détail avec des solutions concrètes.
 
-## Erreurs de compilation
+**Comment utiliser ce guide :**
+- Copiez le message d'erreur exact que vous avez
+- Cherchez-le dans ce document (Ctrl+F)
+- Suivez la solution étape par étape
+- Testez après chaque modification
+- N'hésitez pas à recommencer si nécessaire
 
-### ❌ Erreur : "Module not found: Can't resolve 'next-auth'"
+**Analogie :** Ce guide est comme un manuel de réparation automobile détaillé - chaque problème a sa solution spécifique avec des instructions précises.
 
-**Symptôme :**
+## Erreurs de compilation - Quand votre code ne "compile" pas
+
+### Qu'est-ce qu'une erreur de compilation ?
+**Explication pour débutants :** Une erreur de compilation survient quand Next.js essaie de transformer votre code TypeScript en JavaScript mais ne peut pas y arriver à cause d'un problème (module manquant, syntaxe incorrecte, etc.).
+
+**Analogie :** C'est comme un traducteur qui s'arrête au milieu d'une phrase parce qu'il ne comprend pas un mot - il ne peut pas continuer tant que le problème n'est pas résolu.
+
+### ERREUR 1 : "Module not found: Can't resolve 'next-auth'"
+
+**Symptôme complet que vous voyez :**
 ```
 Module not found: Can't resolve 'next-auth'
+  Import trace for requested module:
+  ./lib/auth.ts
+  ./app/api/auth/[...nextauth]/route.ts
 ```
 
-**Cause :** NextAuth n'est pas installé ou l'installation a échoué.
+**Traduction en français simple :** "Je ne trouve pas le module 'next-auth'"
 
-**Solution :**
+**Ce qui s'est passé techniquement :**
+1. Next.js essaie de compiler votre fichier `lib/auth.ts`
+2. Il voit la ligne `import NextAuth from "next-auth"`
+3. Il cherche le package `next-auth` dans `node_modules/`
+4. Il ne le trouve pas → erreur
+
+**Causes possibles :**
+- NextAuth n'a jamais été installé
+- L'installation a été interrompue (Ctrl+C pendant `npm install`)
+- Le fichier `package.json` a été corrompu
+- Problème de connexion internet pendant l'installation
+
+**Solution détaillée :**
+
+**Étape 1 : Diagnostiquer le problème**
 ```bash
-# Vérifier si NextAuth est installé
 npm list next-auth
+```
 
-# Si absent, installer
-npm install next-auth@4
+**Explications de cette commande :**
+- `npm list` = lister tous les packages installés
+- `next-auth` = chercher spécifiquement ce package
+- Si installé : vous verrez `next-auth@4.x.x`
+- Si absent : vous verrez `(empty)` ou une erreur
 
-# Si présent mais bugué, réinstaller
-npm uninstall next-auth
+**Étape 2A : Si le package est absent (cas le plus fréquent)**
+```bash
 npm install next-auth@4
 ```
 
-### ❌ Erreur : "Module not found: Can't resolve '@next-auth/prisma-adapter'"
+**Ce qui se passe :**
+- npm contacte le registre officiel npmjs.com
+- Télécharge next-auth version 4.x.x et ses dépendances
+- Les installe dans `node_modules/next-auth/`
+- Met à jour `package.json` et `package-lock.json`
 
-**Symptôme :**
+**Durée moyenne :** 30-90 secondes
+
+**Étape 2B : Si le package existe mais est bugué (plus rare)**
+```bash
+npm uninstall next-auth
+```
+
+**Explication :**
+- Supprime complètement next-auth de `node_modules/`
+- Nettoie les références dans `package.json`
+- Prépare une installation propre
+
+```bash
+npm install next-auth@4
+```
+
+**Vérification que ça marche :**
+```bash
+npm list next-auth
+```
+**Résultat attendu :** `next-auth@4.24.x` (ou version similaire)
+
+### ERREUR 2 : "Module not found: Can't resolve '@next-auth/prisma-adapter'"
+
+**Symptôme complet :**
 ```
 Module not found: Can't resolve '@next-auth/prisma-adapter'
+  Import trace for requested module:
+  ./lib/auth.ts
 ```
 
-**Cause :** Mauvais nom de package ou version incompatible.
+**Traduction simple :** "Je ne trouve pas l'adaptateur Prisma pour NextAuth"
 
-**Solution :**
+**Ce qui s'est passé :**
+1. Votre code essaie d'importer `PrismaAdapter` depuis `@next-auth/prisma-adapter`
+2. Next.js ne trouve pas ce package dans `node_modules/`
+3. Compilation interrompue
+
+**Piège courant pour débutants :**
+Beaucoup d'étudiants installent `@auth/prisma-adapter` (pour NextAuth v5) au lieu de `@next-auth/prisma-adapter` (pour NextAuth v4). Les noms sont très similaires mais ce sont des packages différents !
+
+**Analogie :** C'est comme commander une pièce de voiture Renault avec une référence Peugeot - les marques sont proches mais les pièces ne sont pas compatibles.
+
+**Solution détaillée :**
+
+**Étape 1 : Vérifier quel package est installé**
 ```bash
-# Désinstaller le mauvais package (si installé)
-npm uninstall @auth/prisma-adapter
+npm list | findstr prisma-adapter
+```
 
-# Installer le bon package pour NextAuth v4
+**Sur Mac/Linux :**
+```bash
+npm list | grep prisma-adapter
+```
+
+**Résultats possibles :**
+- `@auth/prisma-adapter@x.x.x` → **MAUVAIS PACKAGE** (pour NextAuth v5)
+- `@next-auth/prisma-adapter@x.x.x` → **BON PACKAGE** (pour NextAuth v4)
+- Rien → Aucun adaptateur installé
+
+**Étape 2 : Nettoyer le mauvais package (si nécessaire)**
+```bash
+npm uninstall @auth/prisma-adapter
+```
+
+**Explication :** Cette commande supprime le mauvais package s'il a été installé par erreur.
+
+**Étape 3 : Installer le bon package**
+```bash
 npm install @next-auth/prisma-adapter
 ```
 
-### ❌ Erreur : "Cannot find module './lib/prisma' or its corresponding type declarations"
+**Ce que fait ce package :**
+- Fait le lien entre NextAuth (gestion d'authentification) et Prisma (base de données)
+- Stocke les sessions utilisateur dans PostgreSQL au lieu de la mémoire
+- Gère automatiquement les tables users, accounts, sessions, etc.
 
-**Symptôme :**
+**Vérification :**
+```bash
+npm list @next-auth/prisma-adapter
+```
+**Résultat attendu :** `@next-auth/prisma-adapter@1.x.x`
+
+### ERREUR 3 : "Cannot find module './lib/prisma' or its corresponding type declarations"
+
+**Symptôme complet que vous voyez :**
 ```
 Cannot find module '@/lib/prisma'
+Error: Cannot resolve dependency '@/lib/prisma'
+TypeScript error in /your-project/lib/auth.ts(2,24):
+Cannot find module '@/lib/prisma' or its corresponding type declarations.
 ```
 
-**Cause :** Le fichier `lib/prisma.ts` n'existe pas ou n'est pas configuré.
+**Traduction simple :** "Je ne trouve pas le fichier lib/prisma.ts"
 
-**Solution :**
-Vérifiez que le fichier `lib/prisma.ts` existe et contient :
+**Ce qui s'est passé techniquement :**
+1. Votre fichier `lib/auth.ts` contient une ligne comme `import { prisma } from '@/lib/prisma'`
+2. TypeScript cherche le fichier `lib/prisma.ts` dans votre projet
+3. Il ne le trouve pas ou le fichier existe mais est vide/mal configuré
+4. La compilation s'arrête
+
+**Pourquoi cette erreur arrive-t-elle ?**
+- Vous avez copié du code qui référence `@/lib/prisma` mais n'avez pas créé ce fichier
+- Le fichier existe mais ne contient pas les bonnes exportations
+- Problème de configuration TypeScript avec l'alias `@/`
+
+**Analogie :** C'est comme si vous aviez une recette qui dit "ajoutez le mélange du bol bleu" mais qu'il n'y a pas de bol bleu sur votre plan de travail.
+
+**Solution complète étape par étape :**
+
+**Étape 1 : Vérifier si le fichier existe**
+```bash
+ls lib/prisma.ts
+```
+
+**Sur Windows PowerShell :**
+```powershell
+Get-Item lib\prisma.ts
+```
+
+**Résultats possibles :**
+- Le fichier est affiché → Il existe, passez à l'étape 3
+- "No such file" / "Cannot find path" → Le fichier n'existe pas, passez à l'étape 2
+
+**Étape 2 : Créer le fichier lib/prisma.ts**
+
+**2A. Créer le dossier lib s'il n'existe pas**
+```bash
+mkdir lib
+```
+
+**2B. Créer le fichier avec le bon contenu**
+Créez le fichier `lib/prisma.ts` et copiez-collez exactement ce code :
+
 ```typescript
 import { PrismaClient } from '@prisma/client'
 
@@ -67,75 +212,441 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient()
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 ```
 
-## Erreurs de base de données
+**Explication ligne par ligne de ce code :**
 
-### ❌ Erreur : "Schema validation failed"
+```typescript
+import { PrismaClient } from '@prisma/client'
+```
+- Importe la classe PrismaClient depuis le package Prisma
+- Cette classe permet de communiquer avec votre base de données PostgreSQL
 
-**Symptôme :**
+```typescript
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
+}
+```
+- Définit un type TypeScript pour l'objet global
+- `globalThis` = objet global JavaScript (disponible partout)
+- On dit à TypeScript : "cet objet peut avoir une propriété prisma de type PrismaClient"
+
+```typescript
+export const prisma = globalForPrisma.prisma ?? new PrismaClient()
+```
+- **Partie la plus importante :** Crée ou réutilise une instance de Prisma
+- `??` = "nullish coalescing" → si à gauche est null/undefined, utilise la droite
+- **Traduction :** "Utilise l'instance Prisma globale si elle existe, sinon crée-en une nouvelle"
+- **Pourquoi c'est important :** Évite de créer plusieurs connexions à la base de données
+
+```typescript
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+```
+- En mode développement, stocke l'instance Prisma globalement
+- Évite les reconnexions multiples quand Next.js recompile à chaud
+- En production, chaque requête utilise sa propre instance (plus sûr)
+
+**Analogie complète :** Ce fichier est comme un gestionnaire de connexions téléphoniques dans un bureau. Au lieu de créer une nouvelle ligne téléphonique pour chaque appel (coûteux), il réutilise les lignes existantes quand c'est possible.
+
+**Étape 3 : Vérifier le contenu du fichier existant**
+Si le fichier `lib/prisma.ts` existe déjà, ouvrez-le et vérifiez qu'il contient exactement le code ci-dessus. S'il y a des différences, remplacez tout le contenu.
+
+**Erreurs courantes dans ce fichier :**
+- Oublier le `export` devant `const prisma`
+- Mauvais nom d'import : `import { PrismaClient } from 'prisma/client'` (il manque le @)
+- Syntaxe `??` non supportée (Node.js trop ancien)
+
+**Étape 4 : Vérification que tout fonctionne**
+```bash
+npm run dev
+```
+
+Si le serveur démarre sans erreur, le problème est résolu. Sinon, vérifiez :
+- Le fichier est bien sauvegardé
+- Pas d'erreurs de syntaxe (parenthèses, guillemets)
+- Le dossier `lib/` est au bon endroit (à la racine du projet)
+
+## Erreurs de base de données - Quand Prisma ne peut pas accéder aux données
+
+### Qu'est-ce qu'une erreur de base de données ?
+**Explication pour débutants :** Ces erreurs surviennent quand votre application essaie de communiquer avec PostgreSQL mais rencontre un problème : table inexistante, schéma incorrect, connexion impossible, etc.
+
+**Analogie :** C'est comme essayer d'ouvrir une armoire avec une clé qui ne correspond pas, ou chercher un dossier dans un classeur qui n'a jamais été organisé.
+
+### ERREUR 4 : "Schema validation failed"
+
+**Symptôme complet que vous voyez :**
 ```
 Error: Schema validation failed
+  --> prisma/schema.prisma:23
+   |
+23 | model User {
+   |       ^^^^
+   |
+error: Error validating model "User": The model name "User" is invalid.
 ```
 
-**Cause :** Le schéma Prisma contient des erreurs de syntaxe.
+**Ou parfois :**
+```
+Prisma schema validation failed
+Error: 
+  - Error in prisma/schema.prisma at line XX: Invalid relation field
+  - Error in prisma/schema.prisma at line YY: Unknown type
+```
 
-**Solution :**
+**Traduction simple :** "Votre fichier schema.prisma contient des erreurs"
+
+**Ce qui s'est passé techniquement :**
+1. Vous avez modifié le fichier `prisma/schema.prisma`
+2. Prisma lit ce fichier pour comprendre la structure de votre base de données
+3. Il trouve des erreurs de syntaxe ou de logique
+4. Il refuse de continuer tant que les erreurs ne sont pas corrigées
+
+**Causes courantes pour débutants :**
+- **Fautes de frappe :** `modle User` au lieu de `model User`
+- **Relations mal définies :** références vers des modèles qui n'existent pas
+- **Types de données incorrects :** `Int` au lieu de `Int?`
+- **Noms dupliqués :** deux modèles avec le même nom
+- **Syntaxe incorrecte :** manque de `@` devant les attributs
+
+**Solution détaillée :**
+
+**Étape 1 : Diagnostiquer précisément l'erreur**
 ```bash
-# Valider le schéma
 npx prisma validate
-
-# Si erreur, vérifiez :
-# 1. Toutes les relations sont correctes
-# 2. Les noms de modèles sont uniques  
-# 3. Les types de données sont valides
-# 4. La syntaxe Prisma est correcte
 ```
 
-### ❌ Erreur : "The table 'users' does not exist"
+**Explication de cette commande :**
+- `npx prisma validate` = vérifier la syntaxe du schéma sans toucher à la base de données
+- Affiche toutes les erreurs trouvées avec numéros de ligne
+- Outil de diagnostic gratuit et sans risque
 
-**Symptôme :**
+**Exemple de résultat avec erreurs :**
 ```
-The table 'main.users' does not exist in the current database
+Error validating: These models do not have a unique identifier or id declared:
+  Model: "User"
+  
+Error validating field "accounts" in model "User": The relation field `accounts` on Model `User` is missing an opposite relation field named `user` on model `Account`.
 ```
 
-**Cause :** Les tables d'authentification n'ont pas été créées dans la base de données.
+**Étape 2 : Corriger les erreurs courantes**
 
-**Solution :**
+**Erreur A : Modèle sans identifiant unique**
+```prisma
+model User {
+  name  String
+  email String
+}
+```
+**Solution :** Ajouter un champ `id` :
+```prisma
+model User {
+  id    String @id @default(cuid())  ← Ajouter cette ligne
+  name  String
+  email String
+}
+```
+
+**Erreur B : Relation mal définie**
+```prisma
+model User {
+  id       String    @id @default(cuid())
+  products Product[]  ← Référence vers Product qui n'existe pas
+}
+```
+**Solution :** S'assurer que le modèle `Product` existe aussi dans le schéma.
+
+**Erreur C : Types incorrects**
+```prisma
+model User {
+  id    String @id @default(cuid())
+  age   string  ← 's' minuscule est incorrect
+}
+```
+**Solution :** Utiliser les bons types Prisma :
+```prisma
+model User {
+  id    String @id @default(cuid())
+  age   Int?    ← Types valides : String, Int, Float, Boolean, DateTime
+}
+```
+
+**Étape 3 : Validation complète**
+Après chaque correction, relancez :
 ```bash
-# Appliquer le schéma à la base de données
-npx prisma db push
+npx prisma validate
+```
 
-# Si ça ne marche pas, forcer la recréation
+**Résultat attendu quand tout est correct :**
+```
+The schema is valid.
+```
+
+### ERREUR 5 : "The table 'users' does not exist"
+
+**Symptôme complet que vous voyez :**
+```
+PrismaClientKnownRequestError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+The table `main.users` does not exist in the current database.
+  at PrismaClient.handleRequestError
+```
+
+**Ou :**
+```
+P2021: The table `users` does not exist in the current database
+```
+
+**Traduction simple :** "La table 'users' n'existe pas dans votre base de données"
+
+**Ce qui s'est passé techniquement :**
+1. Votre code NextAuth essaie de lire/écrire dans la table `users`
+2. PostgreSQL dit "cette table n'existe pas"
+3. L'opération échoue
+
+**Pourquoi ça arrive ?**
+- Vous avez modifié `schema.prisma` mais pas appliqué les changements à la vraie base de données
+- La base de données a été supprimée ou réinitialisée
+- Connexion vers une mauvaise base de données (URL incorrecte)
+
+**Analogie :** C'est comme chercher un dossier "Factures 2024" dans un classeur où vous n'avez jamais créé ce dossier.
+
+**Solution détaillée :**
+
+**Étape 1 : Vérifier que votre schéma est valide**
+```bash
+npx prisma validate
+```
+Si des erreurs apparaissent, corrigez-les d'abord (voir erreur précédente).
+
+**Étape 2 : Appliquer le schéma à la base de données**
+```bash
+npx prisma db push
+```
+
+**Explication de cette commande :**
+- Lit votre fichier `schema.prisma`
+- Compare avec l'état actuel de la base PostgreSQL
+- Génère et exécute les commandes SQL nécessaires (CREATE TABLE, ALTER TABLE, etc.)
+- Synchronise la base avec votre schéma
+
+**Ce qui se passe techniquement :**
+1. Prisma se connecte à PostgreSQL via `DATABASE_URL`
+2. Analyse les différences entre schéma et base de données
+3. Génère du SQL pour créer les tables manquantes
+4. Exécute ces commandes SQL
+
+**Résultat attendu :**
+```
+🚀  Your database is now in sync with your schema.
+```
+
+**Étape 3 : Si l'étape 2 échoue avec des erreurs**
+
+**Option A : Forcer la recréation (ATTENTION : supprime toutes les données)**
+```bash
 npx prisma db push --force-reset
 ```
 
-**Attention :** `--force-reset` supprime toutes les données existantes !
+**DANGER - Lisez ceci attentivement :**
+- `--force-reset` = supprime TOUTES les données existantes
+- Recrée toutes les tables depuis zéro
+- À utiliser UNIQUEMENT en développement, jamais en production
+- Vous perdrez tous les utilisateurs créés, tous les produits, etc.
 
-### ❌ Erreur : "Invalid `prisma.user.create()` invocation"
+**Option B : Diagnostic plus poussé**
+```bash
+# Vérifier la connexion à la base de données
+npx prisma db execute --stdin
+```
+Puis tapez une requête SQL simple comme `SELECT 1;` et pressez Ctrl+D.
 
-**Symptôme :**
+Si cette commande échoue, le problème est votre connexion PostgreSQL, pas les tables.
+
+**Étape 4 : Vérification que tout fonctionne**
+```bash
+npx prisma studio
+```
+
+Vous devriez voir toutes les tables NextAuth : `users`, `accounts`, `sessions`, `verificationtokens`, plus votre table `products` si elle existait déjà.
+
+### ERREUR 6 : "Invalid `prisma.user.create()` invocation"
+
+**Symptôme complet que vous voyez :**
 ```
 Invalid `prisma.user.create()` invocation:
-  Unknown arg `data.password` in data.password for type UserCreateArgs
+  
+  {
+    data: {
+      name: "Test User",
+      email: "test@example.com",
+      password: "hashedPassword123",
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  }
+  }
+
+Unknown arg `data.password` in data.password for type UserCreateArgs.
+Available args:
+type UserCreateArgs = {
+  data: UserCreateInput
+}
+
+type UserCreateInput = {
+  id?: String
+  name?: String | null
+  email: String
+  // password field is missing here!
+}
 ```
 
-**Cause :** Le modèle User dans Prisma ne contient pas le champ `password`.
+**Traduction simple :** "Je ne peux pas créer un utilisateur avec un champ 'password' car ce champ n'existe pas dans mon schéma"
 
-**Solution :**
-Vérifiez que votre modèle User dans `prisma/schema.prisma` contient :
+**Ce qui s'est passé techniquement :**
+1. Votre code d'inscription (`/api/auth/signup`) essaie de créer un utilisateur avec un mot de passe
+2. Il utilise `prisma.user.create({ data: { ..., password: "xxx" } })`
+3. Prisma vérifie si le champ `password` existe dans le modèle `User`
+4. Il ne le trouve pas → erreur avec la liste des champs disponibles
+
+**Pourquoi ça arrive ?**
+- Vous avez copié le code NextAuth mais oublié de mettre à jour le schéma Prisma
+- Le champ `password` a été supprimé accidentellement du modèle `User`
+- Vous utilisez le schéma Prisma de base qui ne contient que les champs OAuth (pas de passwords locaux)
+
+**Analogie :** C'est comme essayer de remplir un formulaire qui a une case "Mot de passe" alors que le formulaire officiel ne contient pas cette case.
+
+**Solution détaillée :**
+
+**Étape 1 : Vérifier le contenu actuel de votre modèle User**
+Ouvrez le fichier `prisma/schema.prisma` et cherchez le modèle `User`. Il ressemble probablement à ça :
+
 ```prisma
 model User {
   id            String    @id @default(cuid())
   name          String?
-  email         String    @unique
-  password      String?   // ← Cette ligne est OBLIGATOIRE
-  // ... autres champs
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  
+  // Relations NextAuth seulement (OAuth)
+  accounts Account[]
+  sessions Session[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 ```
 
-Puis :
+**Problème identifié :** Il manque le champ `password` !
+
+**Étape 2 : Ajouter le champ password au modèle User**
+
+Modifiez votre modèle `User` pour qu'il ressemble exactement à ça :
+
+```prisma
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  password      String?   // ← LIGNE AJOUTÉE - Cette ligne est OBLIGATOIRE
+  emailVerified DateTime?
+  image         String?
+  role          String?   @default("user")  // ← OPTIONNEL - pour les rôles utilisateur
+  
+  // Relations NextAuth
+  accounts Account[]
+  sessions Session[]
+  
+  // Relations avec vos autres modèles (si applicable)
+  products Product[] @relation("CreatedBy")  // ← Si vous avez des produits
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+```
+
+**Explication ligne par ligne de l'ajout :**
+
+```prisma
+password String?
+```
+- `password` = nom du champ qui stockera le mot de passe crypté
+- `String?` = type texte, nullable (peut être null)
+- **Pourquoi nullable ?** Parce que les utilisateurs OAuth (Google, GitHub) n'ont pas de mot de passe local
+
+**IMPORTANT :** Ne jamais stocker les mots de passe en clair ! Votre code d'inscription doit utiliser bcrypt pour crypter le mot de passe avant de l'enregistrer.
+
+**Étape 3 : Regénérer le client Prisma**
 ```bash
 npx prisma generate
+```
+
+**Explication de cette commande :**
+- Lit le nouveau schéma avec le champ `password`
+- Régénère les types TypeScript pour inclure ce nouveau champ
+- Met à jour le client Prisma pour reconnaître `password`
+
+**Résultat attendu :**
+```
+✔ Generated Prisma Client (v4.x.x) to ./node_modules/.prisma/client in XXXms
+```
+
+**Étape 4 : Appliquer les changements à la base de données**
+```bash
 npx prisma db push
+```
+
+**Ce qui se passe :**
+- Prisma compare votre nouveau schéma avec la base existante
+- Génère une commande SQL comme `ALTER TABLE users ADD COLUMN password TEXT;`
+- Applique cette modification à PostgreSQL
+
+**Résultat attendu :**
+```
+The following migration(s) have been applied:
+
+  └─ 20241201120000_add_password_field/
+      └─ migration.sql
+
+🚀  Your database is now in sync with your schema.
+```
+
+**Étape 5 : Vérification que tout fonctionne**
+
+**Test 1 : Vérifier dans Prisma Studio**
+```bash
+npx prisma studio
+```
+Allez sur la table `User` → vous devriez voir une nouvelle colonne `password`.
+
+**Test 2 : Tester l'inscription**
+```bash
+npm run dev
+```
+Allez sur `http://localhost:3000/auth/signup` et essayez de créer un compte. L'erreur devrait avoir disparu.
+
+**Erreurs connexes possibles après cette correction :**
+
+**Si vous obtenez "password cannot be null" :**
+Vérifiez que votre code d'inscription utilise bien bcrypt :
+```typescript
+import bcrypt from 'bcryptjs'
+
+// Dans votre API signup :
+const hashedPassword = await bcrypt.hash(password, 12)
+await prisma.user.create({
+  data: {
+    name,
+    email,
+    password: hashedPassword,  // ← Utilisez le mot de passe crypté
+  },
+})
+```
+
+**Si vous obtenez des erreurs TypeScript :**
+Redémarrez votre serveur Next.js après `npx prisma generate` :
+```bash
+# Arrêtez le serveur (Ctrl+C)
+# Puis relancez :
+npm run dev
 ```
 
 ## Erreurs d'authentification
