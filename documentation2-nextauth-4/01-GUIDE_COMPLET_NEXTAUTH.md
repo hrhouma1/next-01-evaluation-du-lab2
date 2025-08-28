@@ -1,4 +1,4 @@
-# Guide complet NextAuth.js v4 - Authentification sécurisée pour débutants
+# Guide complet NextAuth.js v4 - Authentification sécurisée 
 
 ## Introduction - Qu'est-ce que l'authentification ?
 
